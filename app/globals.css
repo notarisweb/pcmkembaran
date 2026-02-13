@@ -1,51 +1,19 @@
-<<<<<<< HEAD
 /* ================= CSS VARIABLES ================= */
 :root {
-  --abah-blue: #144d8b;
-  --abah-dark: #0e3c6d;
+  --abah-blue: #004a8e;
+  --abah-dark: #003666;
   --abah-green: #2ca44f;
   --abah-gold: #f4c300;
-  --bg-gray: #f5f5f5;
-}
-
-/* ================= RESET & BASE ================= */
-* {
-  box-sizing: border-box !important;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--bg-gray);
-  color: #222;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-a {
-  text-decoration: none !important;
-  color: inherit !important;
-}
-
-/* ================= CONTAINER ================= */
-.container, .main-layout-container {
-  width: 100%;
-  max-width: 1140px;
-=======
-/* ================= CSS RESET & VARIABLE ================= */
-:root {
-  --detik-blue: #004a8e;
-  --detik-dark: #003666;
-  --detik-red: #ce1111;
+  --abah-red: #ce1111;
   --bg-gray: #f4f4f4;
   --text-dark: #222;
 }
 
+/* ================= RESET & BASE ================= */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 body {
@@ -53,44 +21,79 @@ body {
   background: var(--bg-gray);
   color: var(--text-dark);
   line-height: 1.6;
+  overflow-x: hidden;
+  width: 100%;
 }
 
-a { text-decoration: none; color: inherit; }
+a { 
+  text-decoration: none !important; 
+  color: inherit !important; 
+  transition: 0.3s;
+}
+
 ul { list-style: none; }
 
+/* ================= CONTAINER ================= */
 .container {
   max-width: 1200px;
->>>>>>> 0a8669197e42559120e5676034610a6a9fd277aa
   margin: 0 auto;
   padding: 0 15px;
 }
 
-<<<<<<< HEAD
 /* ================= HEADER SYSTEM ================= */
-.header-container { width: 100%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.flex-row-center { display: flex !important; flex-direction: row !important; align-items: center; justify-content: space-between; height: 46px; }
+.header-container { 
+  width: 100%; 
+  background: #fff; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+}
 
-.top-bar { border-bottom: 1px solid #eee; }
-.search-wrapper { flex: 1; max-width: 400px; margin: 0 20px; }
-.search-input { width: 100%; padding: 7px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; font-size: 13px; }
+.flex-row-center { 
+  display: flex !important; 
+  align-items: center; 
+  justify-content: space-between; 
+  height: 46px; 
+}
 
-.logo-section { padding: 15px 0; }
-.logo-flex-wrapper { display: flex !important; flex-direction: row !important; align-items: center; gap: 15px; text-decoration: none; }
-.logo-rounded { border-radius: 50%; }
-.main-logo-title { font-size: 34px; font-weight: 900; color: #144d8b; margin: 0; line-height: 1; }
-.main-logo-title .green { color: #2ca44f; }
+.top-bar { 
+  background: #f2f2f2;
+  border-bottom: 1px solid #eee; 
+  font-size: 12px;
+}
+
+.logo-section { padding: 25px 0; text-align: center; }
+.logo-flex-wrapper { 
+  display: flex !important; 
+  flex-direction: row !important; 
+  align-items: center; 
+  justify-content: center;
+  gap: 15px; 
+}
+
+.main-logo-title { 
+  font-size: 34px; 
+  font-weight: 900; 
+  color: var(--abah-blue); 
+  margin: 0; 
+  line-height: 1; 
+  font-style: italic;
+}
+.main-logo-title .green { color: var(--abah-green); }
 .main-logo-title .gray { color: #ccc; font-weight: 300; }
 
 /* Navbar & Hover Kuning */
-.main-nav { background: var(--abah-blue); border-bottom: 3px solid var(--abah-gold); width: 100%; }
+.main-nav { 
+  background: var(--abah-blue); 
+  border-bottom: 3px solid var(--abah-gold); 
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
 .nav-menu-list { 
   display: flex !important; 
-  flex-direction: row !important; 
-  list-style: none !important; 
-  margin: 0; 
-  padding: 0; 
   overflow-x: auto; 
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .nav-menu-list::-webkit-scrollbar { display: none; }
 
@@ -103,268 +106,40 @@ ul { list-style: none; }
   font-weight: 700; 
   font-size: 13px; 
   white-space: nowrap; 
-  transition: 0.2s;
-}
-.nav-anchor:hover { background: var(--abah-gold) !important; color: #000 !important; }
-
-/* ================= CONTENT LAYOUT (DESKTOP) ================= */
-.content-grid {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 30px;
-  margin-top: 25px;
-  width: 100%;
-}
-.main-content { flex: 1; min-width: 0; }
-.sidebar-content { width: 340px; flex-shrink: 0; }
-
-/* ================= STRATEGI TAMPILAN HP (PENTING) ================= */
-@media (max-width: 768px) {
-  /* 1. MUNCULKAN Header di HP */
-  .header-container,
-  .top-bar,
-  .logo-section,
-  .main-nav {
-    display: block !important;
-  }
-
-  /* 2. SEMBUNYIKAN Info Dakwah & Sidebar secara mutlak */
-  .hide-on-mobile,
-  .content-grid,
-  .desktop-view-only,
-  .sidebar-content,
-  aside,
-  .info-dakwah-card,
-  .info-dakwah-wrapper {
-    display: none !important;
-    visibility: hidden;
-    height: 0;
-    width: 0;
-  }
-
-  /* 3. Penyesuaian Ukuran Header di HP agar tidak meluber */
-  .main-logo-title { font-size: 24px !important; }
-  .search-wrapper { display: none; } /* Opsional: Sembunyikan search di HP agar rapi */
-  
-  .nav-anchor {
-    padding: 0 15px;
-    font-size: 12px;
-  }
-
-  /* 4. Atur Konten Postingan Terbaru */
-  .mobile-view-only {
-    display: block !important;
-    width: 100%;
-    background: #fff;
-    padding: 10px 0;
-  }
-
-  /* Sembunyikan judul manual jika di komponen LatestPosts sudah ada judulnya */
-  .mobile-headline, .mobile-only-title {
-    display: none !important;
-  }
-}
-/* Efek Hover untuk Server Component LatestPosts */
-.post-card-group:hover .post-title-heading {
-  color: #004a8e !important;
-}
-
-.post-card-group:hover .post-thumb-img {
-  transform: scale(1.1);
-}
-
-.post-card-group {
-  transition: all 0.2s ease-in-out;
-}
-/* app/globals.css */
-
-/* Targetkan area konten artikel */
-.prose-content p {
-  margin-bottom: 20px !important; /* Memberikan jeda antar paragraf */
-  line-height: 1.8; /* Membuat teks lebih enak dibaca */
-}
-
-.prose-content h2, 
-.prose-content h3 {
-  margin-top: 30px;
-  margin-bottom: 15px;
-  color: #004a8e;
-}
-
-.prose-content ul, 
-.prose-content ol {
-  margin-bottom: 20px;
-  padding-left: 25px;
-=======
-/* ================= HEADER & NAV (ALA DETIK) ================= */
-.header {
-  background: #fff;
-  width: 100%;
-}
-
-/* Topbar Abu-abu */
-.topbar {
-  background: #f2f2f2;
-  border-bottom: 1px solid #ddd;
-  font-size: 12px;
-  color: #666;
-  padding: 8px 0;
-}
-
-.topbar-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Area Logo Tengah */
-.logo-bar {
-  padding: 25px 0;
-  text-align: center;
-}
-
-.logo-inner h1 {
-  font-size: 40px;
-  font-weight: 900;
-  letter-spacing: -2px;
-  font-style: italic;
-}
-
-.logo-inner .blue { color: var(--detik-blue); }
-.logo-inner .red { color: var(--detik-red); }
-.logo-inner .gray { color: #ccc; font-weight: 300; }
-
-/* Navigasi Biru */
-.navbar {
-  background: var(--detik-blue);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.nav-inner {
-  display: flex;
-  align-items: center;
-}
-
-.menu {
-  display: flex;
-  overflow-x: auto;
-}
-
-.menu::-webkit-scrollbar { display: none; } /* Hilangkan scrollbar mobile */
-
-.menu a {
-  color: #fff;
-  padding: 12px 20px;
-  font-weight: 700;
-  font-size: 14px;
   text-transform: uppercase;
-  transition: 0.3s;
-  display: block;
-  white-space: nowrap;
 }
-
-.menu a:hover, .menu a.active {
-  background: var(--detik-dark);
+.nav-anchor:hover { 
+  background: var(--abah-gold) !important; 
+  color: #000 !important; 
 }
-
-/* ================= HEADLINE SECTION ================= */
-.headline {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.headline-main {
-  position: relative;
-  height: 450px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.headline-main img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: 0.5s;
-}
-
-.headline-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40px 20px 20px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.9));
-  color: #fff;
-}
-
-.headline-overlay h2 { font-size: 32px; line-height: 1.2; }
-
-/* Side Headline */
-.headline-side { display: flex; flex-direction: column; gap: 15px; }
-
-.side-item {
-  display: flex;
-  gap: 12px;
-  background: #fff;
-  padding: 10px;
-  border-radius: 8px;
-  border-bottom: 2px solid transparent;
-}
-
-.side-item:hover { border-bottom-color: var(--detik-blue); }
-
-.side-item img {
-  width: 100px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.side-item h4 { font-size: 14px; line-height: 1.4; }
 
 /* ================= LAYOUT UTAMA ================= */
-.main-grid {
+.content-grid {
   display: grid;
-  grid-template-columns: 3fr 1.2fr;
+  grid-template-columns: 1fr 340px;
   gap: 30px;
-  margin-top: 30px;
+  margin-top: 25px;
 }
 
-/* Widget Sidebar */
-.widget {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-top: 4px solid var(--detik-blue);
-}
-
-.widget h3 { margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-
-/* ================= RESPONSIVE ================= */
 @media (max-width: 900px) {
-  .headline, .main-grid {
-    grid-template-columns: 1fr;
-  }
-  .headline-main { height: 300px; }
-  .headline-overlay h2 { font-size: 22px; }
-}
-/* Menghilangkan scrollbar pada menu navigasi mobile */
-.menu::-webkit-scrollbar {
-  display: none;
+  .content-grid { grid-template-columns: 1fr; }
 }
 
-.menu {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* ================= ARTIKEL & PROSE ================= */
+.prose-content p {
+  margin-bottom: 20px !important;
+  line-height: 1.8;
+  font-size: 18px;
 }
 
-/* Efek Hover: Berubah Kuning saat disentuh kursor */
-.nav-link:hover {
-  color: #ffcc00 !important;
->>>>>>> 0a8669197e42559120e5676034610a6a9fd277aa
+.prose-content h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: var(--abah-blue);
+  font-weight: bold;
 }
+
+/* Efek Hover Postingan */
+.post-card-group { transition: all 0.2s ease-in-out; }
+.post-card-group:hover .post-title-heading { color: var(--abah-blue) !important; }
+.post-card-group:hover .post-thumb-img { transform: scale(1.05); }
