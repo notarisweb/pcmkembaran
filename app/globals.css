@@ -110,7 +110,7 @@ ul { list-style: none; }
 }
 .nav-anchor:hover { 
   background: var(--abah-gold) !important; 
-  color: #000 !important; 
+  color: #004a8e !important; 
 }
 
 /* ================= LAYOUT UTAMA ================= */

@@ -1,3 +1,4 @@
+// lib/sanity.query.ts
 import { client } from "./sanity.client";
 import { groq } from "next-sanity";
 

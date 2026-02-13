@@ -1,3 +1,4 @@
+// components/NewsCard.tsx
 import Link from "next/link";
 
 type NewsCardProps = {
@@ -17,7 +18,7 @@ export default function NewsCard({
 }: NewsCardProps) {
   
   /** * LOGIKA DINAMIS: 
-   * Mengubah kategori menjadi slug URL (Contoh: "Dzikir & Doa" -> "dzikir-dan-doa")
+   * Mengubah kategori menjadi slug URL yang bersih (Contoh: "Dzikir & Doa" -> "dzikir-dan-doa")
    */
   const path = category
     .toLowerCase()
@@ -25,7 +26,7 @@ export default function NewsCard({
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
-  // Format tanggal Indonesia
+  // Format tanggal ke standar Indonesia
   const formattedDate = date 
     ? new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
