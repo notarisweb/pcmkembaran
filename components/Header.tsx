@@ -1,3 +1,5 @@
+"use client"; // Wajib ditambahkan agar style jsx dan animasi bisa berjalan di Next.js App Router
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,7 +11,6 @@ export default function Header() {
     { name: "Hadits Pilihan", slug: "hadits" },
     { name: "Fiqih Praktis", slug: "fiqih" },
     { name: "Mutiara Hikmah", slug: "hikmah" },
-    // Menambahkan rubrik baru sesuai schema Sanity
     { name: "Khutbah", slug: "khutbah" },
     { name: "Dzikir & Doa", slug: "dzikir-doa" },
   ];
@@ -75,11 +76,11 @@ export default function Header() {
         <div className="container" style={{ margin: '0 auto', maxWidth: '1200px' }}>
           <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0, overflowX: 'auto', scrollbarWidth: 'none' }}>
             <li style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-              <Link href="/" className="nav-link" style={{ color: '#fff', padding: '14px 20px', display: 'block', fontWeight: 'bold', textDecoration: 'none', fontSize: '13px' }}>HOME</Link>
+              <Link href="/" style={{ color: '#fff', padding: '14px 20px', display: 'block', fontWeight: 'bold', textDecoration: 'none', fontSize: '13px' }}>HOME</Link>
             </li>
             {menus.map((menu) => (
               <li key={menu.slug}>
-                <Link href={`/${menu.slug}`} className="nav-link" style={{ color: '#fff', padding: '14px 18px', display: 'block', fontWeight: 'bold', textDecoration: 'none', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                <Link href={`/${menu.slug}`} style={{ color: '#fff', padding: '14px 18px', display: 'block', fontWeight: 'bold', textDecoration: 'none', fontSize: '13px', whiteSpace: 'nowrap' }}>
                   {menu.name.toUpperCase()}
                 </Link>
               </li>
@@ -89,51 +90,51 @@ export default function Header() {
       </nav>
 
       {/* --- LAPIS 4: RUNNING TEXT (HOT NEWS) --- */}
-<div style={{ backgroundColor: '#fff', borderBottom: '1px solid #eee', overflow: 'hidden' }}>
-  <div className="container" style={{ margin: '0 auto', maxWidth: '1200px', display: 'flex', alignItems: 'center', height: '40px' }}>
-    
-    {/* Label Hot News - Minimalis tanpa background merah */}
-    <div style={{ 
-      color: '#ce1111', 
-      padding: '0 15px', 
-      fontSize: '12px', 
-      fontWeight: '800', 
-      whiteSpace: 'nowrap',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '5px',
-      borderRight: '2px solid #eee', // Garis pemisah halus sebagai ganti blok warna
-      height: '100%'
-    }}>
-      <span style={{ fontSize: '14px' }}>🔥</span> HOT NEWS
-    </div>
+      <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #eee', overflow: 'hidden' }}>
+        <div className="container" style={{ margin: '0 auto', maxWidth: '1200px', display: 'flex', alignItems: 'center', height: '40px' }}>
+          
+          <div style={{ 
+            color: '#ce1111', 
+            padding: '0 15px', 
+            fontSize: '12px', 
+            fontWeight: '800', 
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            borderRight: '2px solid #eee',
+            height: '100%'
+          }}>
+            <span style={{ fontSize: '14px' }}>🔥</span> HOT NEWS
+          </div>
 
-    <div style={{ 
-  flex: 1, 
-  padding: '0 15px', 
-  overflow: 'hidden', 
-  whiteSpace: 'nowrap',
-  position: 'relative' 
-}}>
-  <div className="running-text" style={{ 
-    display: 'inline-block',
-    animation: 'marquee 20s linear infinite' 
-  }}>
-    <span style={{ marginRight: '60px' }}>• Selamat Datang di ABAHSAIF.WEB.ID ...</span>
-    <span style={{ marginRight: '60px' }}>• Update: Simak Rubrik Khutbah Terbaru ...</span>
-  </div>
+          <div style={{ flex: 1, padding: '0 15px', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+            <div className="marquee-container">
+              <span className="marquee-text">• Selamat Datang di ABAHSAIF.WEB.ID - Wadah Menggali Ilmu dan Membuka Cahaya Kebajikan.</span>
+              <span className="marquee-text">• Update: Simak Rubrik Khutbah Terbaru untuk Persiapan Jemaah.</span>
+              <span className="marquee-text">• Baru: Panduan Dzikir dan Doa Harian Lengkap Kini Tersedia.</span>
+            </div>
 
-  <style jsx>{`
-    @keyframes marquee {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-  `}</style>
-</div>
-
-  </div>
-</div>
-
+            <style jsx>{`
+              .marquee-container {
+                display: inline-block;
+                white-space: nowrap;
+                animation: marquee 30s linear infinite;
+              }
+              .marquee-text {
+                margin-right: 60px;
+                font-size: 13px;
+                color: #444;
+                font-weight: 500;
+              }
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+            `}</style>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
