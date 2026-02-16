@@ -1,8 +1,21 @@
 import { type SchemaTypeDefinition } from 'sanity'
-import post from './post' // Mengambil schema post yang sudah kita tambah kategori Khutbah & Dzikir
+import post from './post'
+import download from './download'
+import gallery from './gallery'
+import ranting from './ranting'
+import masjid from './masjid'
+// Import skema baru
+import profile from './profile'
+import board from './board'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
-    post, // Mendaftarkan schema post agar muncul sebagai menu di dashboard
+    post,
+    profile, // Tambahkan ini
+    board,   // Tambahkan ini
+    ranting,
+    masjid,
+    gallery,
+    download,
   ],
 }

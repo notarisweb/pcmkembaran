@@ -2,7 +2,7 @@ import { getNewsPosts } from "@/lib/sanity.query";
 import Link from "next/link";
 
 export default async function Headline() {
-  // Mengambil berita terbaru dari Sanity
+  // Mengambil berita terbaru dari Sanity (Kategori: Berita)
   const allNews = await getNewsPosts();
   const mainNews = allNews[0];
   
@@ -24,7 +24,7 @@ export default async function Headline() {
       {/* 1. AREA UTAMA: GAMBAR DAN GRADIENT */}
       <div style={{ width: '100%', height: '100%', position: 'relative' }}>
         <img 
-          src={mainNews.image || "https://via.placeholder.com/900/500?text=No+Image"} 
+          src={mainNews.image || "https://via.placeholder.com/900/500?text=PCM+Kembaran"} 
           alt={mainNews.title} 
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
@@ -40,8 +40,8 @@ export default async function Headline() {
           color: '#fff'
         }}>
           
-          {/* 2. LINK JUDUL UTAMA: Dibungkus terpisah agar tidak menabrak link lain */}
-          <Link href={`/artikel/${mainNews.slug}`} style={{ textDecoration: 'none', color: '#fff' }}>
+          {/* 2. LINK JUDUL UTAMA: Jalur Dinamis /[category]/[slug] */}
+          <Link href={`/${mainNews.category}/${mainNews.slug}`} style={{ textDecoration: 'none', color: '#fff' }}>
             <h2 style={{ 
               fontSize: '32px', 
               fontWeight: '900', 
@@ -55,10 +55,10 @@ export default async function Headline() {
           </Link>
 
           <span style={{ fontSize: '13px', opacity: 0.9, fontWeight: '500' }}>
-            abahNews | {new Date(mainNews.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+            PCM Kembaran | {new Date(mainNews.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
 
-          {/* 3. AREA BERITA TERKAIT: Sekarang aman karena berada di luar Link utama */}
+          {/* 3. AREA BERITA TERKAIT */}
           {relatedNews.length > 0 && (
             <div style={{ 
               marginTop: '25px', 
@@ -69,17 +69,18 @@ export default async function Headline() {
               gap: '30px' 
             }}>
               {relatedNews.map((related: any) => (
-                <Link key={related._id} href={`/artikel/${related.slug}`} style={{ textDecoration: 'none', color: '#fff' }}>
+                /* Jalur Dinamis: Menggunakan category asli dari data Sanity */
+                <Link key={related._id} href={`/${related.category}/${related.slug}`} style={{ textDecoration: 'none', color: '#fff' }}>
                   <div style={{ cursor: 'pointer' }}>
                     <span style={{ 
-                      color: '#ffcc00', 
+                      color: 'var(--abah-gold)', 
                       fontSize: '11px', 
                       fontWeight: 'bold', 
                       display: 'block', 
                       marginBottom: '5px', 
                       textTransform: 'uppercase' 
                     }}>
-                      Berita Terkait
+                      {related.category} Terkait
                     </span>
                     <p style={{ 
                       fontSize: '14px', 

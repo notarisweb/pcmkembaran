@@ -26,21 +26,51 @@ export default function Footer() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         
         {/* KOLOM 1: BRAND & SOSIAL MEDIA */}
-        <div>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', marginBottom: '20px' }}>
-            <Image src="/abah-saif.jpeg" alt="Logo" width={50} height={50} style={{ borderRadius: '50%' }} />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '24px', fontWeight: '900', color: '#004a8e', lineHeight: '1' }}>
-                ABAH<span style={{ color: '#2ca44f' }}>SAIF</span><span style={{ color: '#aaa', fontWeight: '400', fontSize: '18px' }}>.WEB.ID</span>
-              </span>
-              <span style={{ fontSize: '11px', color: '#555', fontWeight: '600', marginTop: '4px' }}>Menggali Ilmu, Membuka Cahaya</span>
-            </div>
-          </Link>
-          <p style={{ fontSize: '14px', color: '#666', lineHeight: '1.8', marginBottom: '25px', textAlign: 'justify' }}>
-            Wadah edukasi dan literasi Islam yang berkomitmen menyajikan konten murni, menyejukkan, dan mencerahkan. Menggali kedalaman ilmu untuk membuka cahaya kebaikan bagi umat.
-          </p>
+<div>
+  <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '20px' }}>
+    <Image src="/logo-md.png" alt="Logo PCM Kembaran" width={45} height={45} style={{ borderRadius: '50%' }} />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      
+      {/* BRAND DIKECILKAN KE 17px & OUTLINE DIHAPUS AGAR LEBIH RAPI */}
+      <span style={{ 
+        fontSize: '17px', 
+        fontWeight: '900', 
+        color: '#004a8e', 
+        lineHeight: '1', 
+        fontStyle: 'italic', 
+        letterSpacing: '-0.3px'
+      }}>
+        PCM
+        <span style={{ 
+          color: '#f4c300',
+          WebkitTextStroke: '0', /* Outline Dihapus */
+          textShadow: 'none'      /* Shadow Dihapus agar lebih tajam */
+        }}>
+          KEMBARAN
+        </span>
+        <span style={{ color: '#bbb', fontWeight: '300', fontSize: '13px', marginLeft: '1px' }}>
+          .COM
+        </span>
+      </span>
+      
+      <span style={{ 
+        fontSize: '9px', 
+        color: '#666', 
+        fontWeight: '700', 
+        marginTop: '3px', 
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
+      }}>
+        MENGGALI ILMU, MEMBUKA CAHAYA
+      </span>
+    </div>
+  </Link>
+  
+  <p style={{ fontSize: '13px', color: '#666', lineHeight: '1.7', marginBottom: '25px', textAlign: 'justify' }}>
+    Situs resmi Pimpinan Cabang Muhammadiyah (PCM) Kembaran, Kabupaten Banyumas. Wadah informasi dakwah, pendidikan, dan pemberdayaan umat untuk mewujudkan masyarakat Islam yang sebenar-benarnya di wilayah Kecamatan Kembaran.
+  </p>
           
-          {/* SOSIAL MEDIA SVG */}
+          {/* SOSIAL MEDIA */}
           <div style={{ display: 'flex', gap: '12px' }}>
             <Link href="#" style={iconCircleStyle('#1877F2')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -57,37 +87,43 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* KOLOM 2: KATEGORI UTAMA */}
+        {/* KOLOM 2: RUBRIK UTAMA */}
         <div>
-          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #2ca44f', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Kategori Utama</h4>
+          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #f4c300', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Rubrik Utama</h4>
           <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: '#666', lineHeight: '2.2' }}>
-            <li><Link href="/berita" style={{ textDecoration: 'none', color: 'inherit' }}>Berita</Link></li>
-            <li><Link href="/artikel" style={{ textDecoration: 'none', color: 'inherit' }}>Artikel</Link></li>
-            <li><Link href="/tafsir" style={{ textDecoration: 'none', color: 'inherit' }}>Tafsir Al-Qur'an</Link></li>
-            <li><Link href="/khutbah" style={{ textDecoration: 'none', color: 'inherit' }}>Khutbah</Link></li>
-            <li><Link href="/dzikir-doa" style={{ textDecoration: 'none', color: 'inherit' }}>Dzikir & Doa</Link></li>
+            <li><Link href="/berita" style={{ textDecoration: 'none', color: 'inherit' }}>Berita Cabang</Link></li>
+            <li><Link href="/artikel" style={{ textDecoration: 'none', color: 'inherit' }}>Artikel Keislaman</Link></li>
+            <li><Link href="/liputan-dakwah" style={{ textDecoration: 'none', color: 'inherit' }}>Liputan Dakwah</Link></li>
+            <li><Link href="/pendidikan" style={{ textDecoration: 'none', color: 'inherit' }}>Pendidikan & Sekolah</Link></li>
+            <li><Link href="/bisnis" style={{ textDecoration: 'none', color: 'inherit' }}>Ekonomi & Bisnis</Link></li>
+            <li><Link href="/video" style={{ textDecoration: 'none', color: 'inherit' }}>Galeri Video</Link></li>
           </ul>
         </div>
 
-        {/* KOLOM 3: INFORMASI */}
+        {/* KOLOM 3: LAYANAN & ASET */}
         <div>
-          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #004a8e', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Informasi</h4>
+          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #004a8e', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Layanan & Aset</h4>
           <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: '#666', lineHeight: '2.2' }}>
-            <li><Link href="/tentang" style={{ textDecoration: 'none', color: 'inherit' }}>Tentang Kami</Link></li>
-            <li><Link href="/redaksi" style={{ textDecoration: 'none', color: 'inherit' }}>Redaksi & Manajemen</Link></li>
-            <li><Link href="/kontak" style={{ textDecoration: 'none', color: 'inherit' }}>Hubungi Kami</Link></li>
-            <li><Link href="/pedoman" style={{ textDecoration: 'none', color: 'inherit' }}>Pedoman Media Siber</Link></li>
+            <li><Link href="/ranting" style={{ textDecoration: 'none', color: 'inherit' }}>Data Pimpinan Ranting</Link></li>
+            <li><Link href="/masjid" style={{ textDecoration: 'none', color: 'inherit' }}>Daftar Masjid & Musholla</Link></li>
+            <li><Link href="/aum" style={{ textDecoration: 'none', color: 'inherit' }}>Amal Usaha (AUM)</Link></li>
+            <li><Link href="/unduhan" style={{ textDecoration: 'none', color: 'inherit' }}>Pusat Unduhan Dokumen</Link></li>
+            <li><Link href="/galeri" style={{ textDecoration: 'none', color: 'inherit' }}>Galeri Foto Kegiatan</Link></li>
+            <li><Link href="/kontak" style={{ textDecoration: 'none', color: 'inherit' }}>Kontak Pengurus</Link></li>
           </ul>
         </div>
 
-        {/* KOLOM 4: JARINGAN MEDIA */}
+        {/* KOLOM 4: TAUTAN RESMI */}
         <div>
-          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #ce1111', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Jaringan Media</h4>
+          <h4 style={{ fontSize: '16px', fontWeight: 'bold', borderLeft: '4px solid #ce1111', paddingLeft: '10px', marginBottom: '20px', color: '#333' }}>Tautan Resmi</h4>
           <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: '#666', lineHeight: '2.2' }}>
-            <li><Link href="https://onislam.web.id" target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>Media Islam Online</Link></li>
-            <li><Link href="https://youtube.com/@ilham-tv" target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>Ilham TV (YouTube)</Link></li>
+            <li><Link href="https://muhammadiyah.or.id" target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>PP Muhammadiyah</Link></li>
+            <li><Link href="https://suaramuhammadiyah.id" target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>Suara Muhammadiyah</Link></li>
+            <li><Link href="https://lazismu.org" target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>Lazismu Pusat</Link></li>
             <li style={{ marginTop: '10px' }}>
-              <Link href="/pasang-iklan" style={{ color: '#004a8e', fontWeight: 'bold', textDecoration: 'none' }}>Pasang Iklan / Kerjasama</Link>
+              <Link href="https://sociabuzz.com/pcmkembaran/tribe" target="_blank" style={{ color: '#004a8e', fontWeight: 'bold', textDecoration: 'none', border: '1px solid #004a8e', padding: '5px 10px', borderRadius: '5px', display: 'inline-block' }}>
+                Donasi Perjuangan Dakwah
+              </Link>
             </li>
           </ul>
         </div>
@@ -97,7 +133,8 @@ export default function Footer() {
       <div style={{ backgroundColor: '#f8f9fa', marginTop: '50px', padding: '25px 0', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '13px', color: '#888' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <p style={{ margin: 0 }}>
-            © {currentYear} <strong>ABAHSAIF.WEB.ID</strong> — Media Dakwah Digital. Terus Menggali Ilmu, Membuka Cahaya.
+            © {currentYear} <strong>PCM KEMBARAN</strong> — Pimpinan Cabang Muhammadiyah Kembaran, Banyumas. <br />
+            <span style={{ fontSize: '11px' }}>Dikelola oleh Majelis Pustaka dan Informasi (MPI) PCM Kembaran.</span>
           </p>
         </div>
       </div>

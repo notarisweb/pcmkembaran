@@ -1,23 +1,30 @@
-import { defineConfig } from 'sanity';
-import { structureTool } from 'sanity/structure';
-import { visionTool } from '@sanity/vision';
-import { schema } from './sanity/schemaTypes'; // Mengarah ke index.ts di schemaTypes
+// sanity.config.ts
+import { defineConfig } from 'sanity'
+import { structureTool } from 'sanity/structure'
+
+/** * PERBAIKAN: Nama folder kamu adalah 'schemaTypes', bukan 'schema'.
+ * Pastikan path ini benar (gunakan './sanity/schemaTypes' jika file ini di luar folder sanity)
+ */
+import { schema } from './sanity/schemaTypes' 
 
 export default defineConfig({
   name: 'default',
-  title: 'Abah Saif Studio', // Nama yang akan muncul di dashboard
+  title: 'PCM Kembaran Studio',
 
-  projectId: 'v9y48nrd', // Project ID Anda
-  dataset: 'production',    // Nama dataset Anda
+  // Ganti dengan Project ID asli dari dashboard sanity.io kamu
+  projectId: 'deyoeizv', 
+  dataset: 'production',
 
-  basePath: '/studio',      // URL akses dashboard (abahsaif.web.id/studio)
+  /**
+   * WAJIB: Harus '/studio' agar sinkron dengan folder app/studio di Next.js.
+   * Ini akan menghilangkan error "Tool not found" yang muncul sebelumnya.
+   */
+  basePath: '/studio', 
 
-  plugins: [
-    structureTool(),        // Untuk mengatur struktur menu di kiri
-    visionTool(),           // Tool untuk ngetes query GROQ langsung di dashboard
-  ],
+  plugins: [structureTool()],
 
   schema: {
-    types: schema.types,    // Mengambil daftar schema (post.ts) yang sudah didaftarkan
+    // Mengambil array 'types' yang sudah kita ekspor di index.ts
+    types: schema.types,
   },
-});
+})

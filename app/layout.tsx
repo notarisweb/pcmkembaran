@@ -1,30 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import LayoutWrapper from "@/components/LayoutWrapper"; // Kita buat komponen ini di bawah
 
-// Menambahkan Metadata agar website lebih mudah ditemukan di Google
+// Metadata tetap aman sebagai Server Component (Bagus untuk SEO)
 export const metadata: Metadata = {
-  title: "Abah Saif - Menggali Ilmu, Membuka Cahaya",
+  title: "PCM Kembaran - Menggali Ilmu, Membuka Cahaya",
   description: "Wadah edukasi dan literasi Islam yang menyajikan konten murni, menyejukkan, dan mencerahkan.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className="antialiased" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Header muncul di bagian paling atas di semua halaman */}
-        <Header />
-        
-        {/* Main diberikan 'flex: 1' agar jika kontennya sedikit, 
-          Footer akan tetap berada di bawah (tidak melayang ke tengah) 
-        */}
-        <main style={{ flex: 1 }}>
+      <body className="antialiased">
+        {/* Kita bungkus children dengan wrapper khusus */}
+        <LayoutWrapper>
           {children}
-        </main>
-
-        {/* Footer muncul secara global di semua halaman */}
-        <Footer />
+        </LayoutWrapper>
       </body>
     </html>
   );

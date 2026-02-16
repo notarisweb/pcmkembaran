@@ -3,7 +3,7 @@
   --abah-blue: #004a8e;
   --abah-dark: #003666;
   --abah-green: #2ca44f;
-  --abah-gold: #f4c300;
+  --abah-gold: #f4c300; /* Warna Kuning untuk KEMBARAN */
   --abah-red: #ce1111;
   --bg-gray: #f4f4f4;
   --text-dark: #222;
@@ -40,7 +40,7 @@ ul { list-style: none; }
   padding: 0 15px;
 }
 
-/* ================= TOPBAR STYLING - POSISI BARU ================= */
+/* ================= TOPBAR STYLING ================= */
 .top-bar {
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -50,23 +50,21 @@ ul { list-style: none; }
 .flex-row-center {
   display: flex !important;
   align-items: center;
-  justify-content: space-between; /* Menjaga jarak antar 3 grup */
+  justify-content: space-between;
 }
 
-/* KIRI: Menu */
 .top-left-menu {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  flex: 1; /* Memberi ruang agar seimbang */
+  flex: 1;
 }
 
-/* TENGAH: Search */
 .top-center-search {
   display: flex;
   justify-content: center;
-  flex: 2; /* Search box lebih lebar di tengah */
+  flex: 2;
 }
 
 .search-pill-container {
@@ -77,18 +75,16 @@ ul { list-style: none; }
   border-radius: 30px;
   padding: 2px 2px 2px 15px;
   width: 100%;
-  max-width: 350px; /* Batas lebar search tengah */
+  max-width: 350px;
 }
 
-/* KANAN: Tombol */
 .top-right-group {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  flex: 1; /* Memberi ruang agar seimbang */
+  flex: 1;
 }
 
-/* Komponen Visual Tambahan */
 .menu-circle-icon {
   background: var(--abah-blue);
   color: #fff;
@@ -100,7 +96,11 @@ ul { list-style: none; }
   justify-content: center;
 }
 
-.menu-label { font-weight: 800; color: #444; font-size: 14px; }
+.menu-label { 
+  font-weight: 800; 
+  color: #444; 
+  font-size: 14px; 
+}
 
 .btn-blue-pill {
   background: var(--abah-blue);
@@ -121,7 +121,12 @@ ul { list-style: none; }
   font-size: 12px;
 }
 
-.search-pill-input { border: none; outline: none; width: 100%; font-size: 13px; }
+.search-pill-input { 
+  border: none; 
+  outline: none; 
+  width: 100%; 
+  font-size: 13px; 
+}
 
 .search-pill-button {
   background: var(--abah-blue);
@@ -135,27 +140,24 @@ ul { list-style: none; }
 }
 
 /* ================= LOGO SECTION ================= */
-.logo-flex-wrapper {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 15px;
+.logo-section { 
+  padding: 25px 0; 
+  background: #fff; 
 }
-.logo-rounded { border-radius: 50%; }
-
-/* ================= LOGO SECTION ================= */
-.logo-section { padding: 25px 0; background: #fff; }
 
 .logo-flex-wrapper { 
   display: flex !important; 
-  flex-direction: row !important; /* WAJIB: Kunci sejajar horisontal */
+  flex-direction: row !important; 
   align-items: center !important; 
   justify-content: flex-start !important; 
   gap: 20px; 
   width: fit-content;
 }
 
-.logo-rounded { border-radius: 50%; flex-shrink: 0; }
+.logo-rounded { 
+  border-radius: 50%; 
+  flex-shrink: 0; 
+}
 
 .logo-text-box {
   display: flex !important;
@@ -166,15 +168,32 @@ ul { list-style: none; }
 .main-logo-title { 
   font-size: 34px; 
   font-weight: 900; 
-  color: var(--abah-blue); 
+  color: var(--abah-blue); /* Warna PCM (Biru) */
   margin: 0; 
   line-height: 1; 
   font-style: italic;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  /* Shadow halus untuk dasar */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.main-logo-title .green { color: var(--abah-green); }
-.main-logo-title .gray { color: #ccc; font-weight: 300; }
+/* ANTI-SILAU: Trik agar KEMBARAN Jelas Terbaca */
+.main-logo-title span.yellow { 
+  color: var(--abah-gold) !important; 
+  /* Memberikan garis tepi tipis agar huruf terpisah dari putih */
+  -webkit-text-stroke: 0.5px var(--abah-blue); 
+  /* Shadow biru deep agar warna kuning makin 'pop' keluar */
+  text-shadow: 2px 2px 4px rgba(0, 74, 142, 0.4);
+  display: inline-block;
+}
+
+/* FIX: Pastikan .COM Jadi Abu-abu Tipis */
+.main-logo-title span.gray { 
+  color: #ccc !important; 
+  font-weight: 300; 
+  -webkit-text-stroke: 0; /* Menghilangkan stroke di bagian .COM */
+  text-shadow: none;
+}
 
 .tagline {
   font-size: 14px;
@@ -187,13 +206,17 @@ ul { list-style: none; }
 /* ================= NAVBAR & LAYOUT ================= */
 .main-nav { 
   background: var(--abah-blue); 
-  border-bottom: 3px solid var(--abah-gold); 
+  border-bottom: 4px solid var(--abah-gold); 
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
-.nav-menu-list { display: flex !important; overflow-x: auto; scrollbar-width: none; }
+.nav-menu-list { 
+  display: flex !important; 
+  overflow-x: auto; 
+  scrollbar-width: none; 
+}
 .nav-menu-list::-webkit-scrollbar { display: none; }
 
 .nav-anchor { 
@@ -207,7 +230,11 @@ ul { list-style: none; }
   white-space: nowrap; 
   text-transform: uppercase;
 }
-.nav-anchor:hover { background: var(--abah-gold) !important; color: #004a8e !important; }
+
+.nav-anchor:hover { 
+  background: var(--abah-gold) !important; 
+  color: var(--abah-blue) !important; 
+}
 
 .content-grid {
   display: grid;
