@@ -2,74 +2,38 @@ import { getPostsByCategory } from "@/lib/sanity.query";
 import Link from "next/link";
 import Image from "next/image";
 
-/**
- * Komponen Halaman Kategori
- * Menampilkan daftar artikel berdasarkan kategori yang dipilih di URL.
- */
 export default async function CategoryPage({ 
   params 
 }: { 
   params: Promise<{ category: string }> 
 }) {
-  // Pada Next.js 15, params harus di-await sebelum diakses
   const { category } = await params;
-  
-  // Mengambil data artikel secara dinamis berdasarkan kategori
   const posts = await getPostsByCategory(category);
-  
-  // Format Judul Tampilan: 'fiqih-praktis' -> 'FIQIH PRAKTIS'
   const categoryTitle = category.replace(/-/g, ' ').toUpperCase();
 
   return (
-    <main className="container" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 15px', fontFamily: 'Arial, sans-serif' }}>
-      
-      {/* Header Kategori: Gaya khas portal berita dengan border biru tebal */}
-      <div style={{ borderBottom: '3px solid #004a8e', marginBottom: '40px', paddingBottom: '10px' }}>
-        <h1 style={{ fontSize: '28px', color: '#004a8e', fontWeight: '900', margin: 0 }}>
-          {categoryTitle}
-        </h1>
+    <main className="category-container">
+      {/* 1. HEADER KATEGORI */}
+      <div className="category-header">
+        <h1 className="category-title">{categoryTitle}</h1>
       </div>
 
       {posts.length === 0 ? (
-        /* State Tampilan jika kategori masih kosong */
-        <div style={{ padding: '100px 0', textAlign: 'center', color: '#888' }}>
+        <div className="empty-state">
           <div style={{ fontSize: '60px', marginBottom: '20px' }}>📂</div>
           <p>Belum ada postingan untuk kategori <strong>{categoryTitle}</strong>.</p>
-          <Link href="/" style={{ color: '#004a8e', fontWeight: 'bold', marginTop: '15px', display: 'inline-block' }}>
-            Kembali ke Beranda
-          </Link>
+          <Link href="/" className="back-link">Kembali ke Beranda</Link>
         </div>
       ) : (
-        /* Daftar Berita Vertikal dengan gaya modern */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '35px' }}>
+        /* 2. DAFTAR BERITA */
+        <div className="news-list">
           {posts.map((post: any) => {
-            // Pastikan URL tujuan mengikuti folder kategori dinamis
             const postLink = `/${category}/${post.slug}`;
 
             return (
-              <Link 
-                href={postLink} 
-                key={post._id} 
-                className="news-item-row"
-                style={{ 
-                  display: 'flex', 
-                  gap: '25px', 
-                  textDecoration: 'none', 
-                  color: 'inherit',
-                  paddingBottom: '30px',
-                  borderBottom: '1px solid #f0f0f0'
-                }}
-              >
-                {/* Thumbnail Gambar dengan Next/Image agar teroptimasi */}
-                <div style={{ 
-                  width: '280px', 
-                  height: '160px', 
-                  flexShrink: 0, 
-                  borderRadius: '10px', 
-                  overflow: 'hidden', 
-                  position: 'relative',
-                  backgroundColor: '#eee'
-                }}>
+              <Link href={postLink} key={post._id} className="news-item-row">
+                {/* Thumbnail Gambar */}
+                <div className="news-image-wrapper">
                   <Image 
                     src={post.image || "https://via.placeholder.com/280x160?text=No+Image"} 
                     alt={post.title} 
@@ -78,43 +42,19 @@ export default async function CategoryPage({
                   />
                 </div>
 
-                {/* Konten Teks: Judul dan Ringkasan */}
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <h2 style={{ 
-                    fontSize: '22px', 
-                    fontWeight: '800', 
-                    lineHeight: '1.3', 
-                    margin: '0 0 12px 0', 
-                    color: '#1a1a1a'
-                  }}>
-                    {post.title}
-                  </h2>
+                {/* Konten Teks */}
+                <div className="news-content">
+                  <h2 className="news-title">{post.title}</h2>
                   
                   {post.excerpt && (
-                    <p style={{ 
-                      fontSize: '15px', 
-                      color: '#555', 
-                      margin: '0 0 15px 0', 
-                      lineHeight: '1.6', 
-                      display: '-webkit-box', 
-                      WebkitLineClamp: 2, 
-                      WebkitBoxOrient: 'vertical', 
-                      overflow: 'hidden' 
-                    }}>
-                      {post.excerpt}
-                    </p>
+                    <p className="news-excerpt">{post.excerpt}</p>
                   )}
 
-                  {/* Meta Data: Label Kategori & Tanggal */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: 'auto' }}>
-                     <span style={{ fontSize: '11px', backgroundColor: '#eef4ff', padding: '4px 10px', borderRadius: '4px', color: '#004a8e', fontWeight: 'bold' }}>
-                       {categoryTitle}
-                     </span>
-                     <span style={{ fontSize: '12px', color: '#999' }}>
+                  <div className="news-meta">
+                     <span className="meta-label">{categoryTitle}</span>
+                     <span className="meta-date">
                       {new Date(post.publishedAt).toLocaleDateString('id-ID', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
+                        day: 'numeric', month: 'long', year: 'numeric' 
                       })}
                     </span>
                   </div>
@@ -124,6 +64,107 @@ export default async function CategoryPage({
           })}
         </div>
       )}
+
+      {/* 3. CSS RESPONSIVE (MEDIA QUERIES) */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .category-container {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 40px 15px;
+          font-family: Arial, sans-serif;
+        }
+        .category-header {
+          border-bottom: 3px solid #004a8e;
+          margin-bottom: 40px;
+          padding-bottom: 10px;
+        }
+        .category-title {
+          font-size: 28px;
+          color: #004a8e;
+          fontWeight: 900;
+          margin: 0;
+        }
+        .news-list {
+          display: flex;
+          flex-direction: column;
+          gap: 35px;
+        }
+        .news-item-row {
+          display: flex;
+          gap: 25px;
+          text-decoration: none;
+          color: inherit;
+          padding-bottom: 30px;
+          border-bottom: 1px solid #f0f0f0;
+          transition: opacity 0.2s;
+        }
+        .news-item-row:hover { opacity: 0.8; }
+        
+        .news-image-wrapper {
+          width: 280px;
+          height: 160px;
+          flex-shrink: 0;
+          border-radius: 10px;
+          overflow: hidden;
+          position: relative;
+          background-color: #eee;
+        }
+        .news-content {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .news-title {
+          font-size: 22px;
+          font-weight: 800;
+          line-height: 1.3;
+          margin: 0 0 12px 0;
+          color: #1a1a1a;
+        }
+        .news-excerpt {
+          font-size: 15px;
+          color: #555;
+          margin: 0 0 15px 0;
+          line-height: 1.6;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .news-meta {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: auto;
+        }
+        .meta-label {
+          font-size: 11px;
+          background-color: #eef4ff;
+          padding: 4px 10px;
+          border-radius: 4px;
+          color: #004a8e;
+          font-weight: bold;
+        }
+        .meta-date { font-size: 12px; color: #999; }
+        .empty-state { padding: 100px 0; text-align: center; color: #888; }
+        .back-link { color: #004a8e; font-weight: bold; margin-top: 15px; display: inline-block; }
+
+        /* === RESPONSIVE BREAKPOINT (HP) === */
+        @media (max-width: 768px) {
+          .category-container { padding: 20px 15px; }
+          .news-item-row {
+            flex-direction: column; /* Gambar pindah ke atas teks */
+            gap: 15px;
+            padding-bottom: 25px;
+          }
+          .news-image-wrapper {
+            width: 100%; /* Gambar ambil lebar penuh */
+            height: 200px;
+          }
+          .news-title { font-size: 18px; }
+          .news-excerpt { -webkit-line-clamp: 3; } /* Tampilkan lebih banyak teks di HP */
+        }
+      `}} />
     </main>
   );
 }
