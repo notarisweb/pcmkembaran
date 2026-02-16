@@ -2,37 +2,40 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 
-// Konfigurasi VAPID dengan kunci yang Anda berikan
-webpush.setVapidDetails(
-  'mailto:admin@pcmkembaran.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+const initializeWebPush = () => {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+
+  if (!publicKey || !privateKey) {
+    throw new Error("VAPID keys are not set.");
+  }
+
+  webpush.setVapidDetails(
+    'mailto:admin@pcmkembaran.com',
+    publicKey,
+    privateKey
+  );
+};
 
 export async function POST(request: Request) {
   try {
-    const { subscription, title, body } = await request.json();
+    initializeWebPush();
+    // API sekarang menerima data lengkap dari Sanity
+    const { subscription, title, message, url } = await request.json();
 
-    // Payload notifikasi yang akan muncul di layar HP jamaah
     const payload = JSON.stringify({
-      title: title || "Naskah Khutbah Terbaru",
-      body: body || "Silakan cek naskah khutbah Jumat terbaru di portal PCM Kembaran.",
-      icon: "/icons/icon-192x192.png", // Menggunakan ikon yang sudah didaftarkan di manifest
+      title: title || "Info Terbaru PCM Kembaran", // Menampilkan judul postingan asli
+      body: message || "Ada postingan baru, silakan cek di website.",
+      icon: "/icons/icon-192x192.png",
       badge: "/favicon.ico",
       data: {
-        url: "https://pcmkembaran.com/khutbah", // Arahkan jamaah langsung ke rubrik khutbah
+        url: url || "https://pcmkembaran.com", // Link otomatis menuju artikel tersebut
       },
     });
 
-    // Proses pengiriman ke Push Service (Google/Apple/Mozilla)
     await webpush.sendNotification(subscription, payload);
-
-    return NextResponse.json({ success: true, message: 'Notifikasi berhasil dikirim!' });
-  } catch (error) {
-    console.error('Gagal mengirim push notification:', error);
-    return NextResponse.json(
-      { success: false, error: 'Gagal mengirim notifikasi' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

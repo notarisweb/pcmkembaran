@@ -4,77 +4,102 @@ import { useState, useEffect } from "react";
 export default function NotificationButton() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Memastikan fitur didukung oleh browser & Service Worker sudah aktif
-    if ("serviceWorker" in navigator && "PushManager" in window) {
+    // 1. Deteksi layar HP (Breakpoint 992px)
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 992);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // 2. Tangkap event "Ready to Install"
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
       setIsSupported(true);
-      checkSubscription();
-    }
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    // 3. Cek apakah sudah terinstal
+    window.addEventListener("appinstalled", () => {
+      setDeferredPrompt(null);
+      setIsSubscribed(true);
+    });
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
   }, []);
 
-  const checkSubscription = async () => {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-    setIsSubscribed(!!subscription);
-  };
+  const handleAction = async () => {
+    if (!deferredPrompt) {
+      handlePushSubscription();
+      return;
+    }
 
-  const handleSubscribe = async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      
-      // Meminta izin ke jamaah
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Izin notifikasi ditolak. Anda tidak akan menerima info khutbah.");
-        return;
-      }
-
-      // Mendaftarkan perangkat ke Push Service
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, // Menggunakan Public Key kamu
-      });
-
-      // Kirim data langganan ke server untuk disimpan (Database/Sanity)
-      await fetch("/api/subscribe", {
-        method: "POST",
-        body: JSON.stringify(subscription),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      setIsSubscribed(true);
-      alert("Alhamdulillah! Anda akan menerima notifikasi naskah khutbah terbaru.");
-    } catch (error) {
-      console.error("Gagal berlangganan:", error);
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
     }
   };
 
-  if (!isSupported) return null;
+  const handlePushSubscription = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const permission = await Notification.requestPermission();
+      
+      if (permission === "granted") {
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, //
+        });
+
+        await fetch("/api/subscribe", {
+          method: "POST",
+          body: JSON.stringify(subscription),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        setIsSubscribed(true);
+        // UPDATE: Pesan konfirmasi mencakup seluruh postingan
+        alert("Alhamdulillah! Notifikasi aktif. Anda akan menerima kabar dan informasi terbaru dari PCM Kembaran.");
+      }
+    } catch (err) {
+      console.error("Gagal mendaftarkan notifikasi:", err);
+    }
+  };
+
+  if (!isMobile) return null;
 
   return (
     <button
-      onClick={handleSubscribe}
+      onClick={handleAction}
       disabled={isSubscribed}
       style={{
-        backgroundColor: isSubscribed ? "#28a745" : "var(--abah-blue)",
+        backgroundColor: isSubscribed ? "#28a745" : "#004a8e", // Biru PCM
         color: "#fff",
-        padding: "10px 20px",
+        padding: "12px 24px",
         borderRadius: "30px",
         border: "none",
-        fontWeight: "700",
+        fontWeight: "800",
         cursor: isSubscribed ? "default" : "pointer",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        fontSize: "14px"
+        gap: "10px",
+        fontSize: "14px",
+        boxShadow: "0 6px 20px rgba(0,74,142,0.3)"
       }}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
       </svg>
-      {isSubscribed ? "AKTIF: INFO KHUTBAH" : "TERIMA INFO KHUTBAH"}
+      {isSubscribed ? "SUDAH TERPASANG" : "INSTALL PCM KEMBARAN"}
     </button>
   );
 }
