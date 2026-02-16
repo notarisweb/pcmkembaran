@@ -1,12 +1,13 @@
 /* ================= CSS VARIABLES ================= */
 :root {
-  --abah-blue: #004a8e;
+  --abah-blue: #004a8e;     /* Biru Resmi PCM */
   --abah-dark: #003666;
   --abah-green: #2ca44f;
-  --abah-gold: #f4c300; /* Warna Kuning untuk KEMBARAN */
+  --abah-gold: #ffc107;     /* Kuning Tua agar kontras */
   --abah-red: #ce1111;
-  --bg-gray: #f4f4f4;
-  --text-dark: #222;
+  --bg-gray: #fcfcfc;       /* Putih Abu-abu lembut agar logo biru 'pop' */
+  --text-dark: #1a1a1a;
+  --border-light: #eeeeee;
 }
 
 /* ================= RESET & BASE ================= */
@@ -28,7 +29,7 @@ body {
 a { 
   text-decoration: none !important; 
   color: inherit !important; 
-  transition: 0.3s;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 ul { list-style: none; }
@@ -42,9 +43,9 @@ ul { list-style: none; }
 
 /* ================= TOPBAR STYLING ================= */
 .top-bar {
-  background: #fff;
-  border-bottom: 1px solid #eee;
-  padding: 8px 0;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-light);
+  padding: 10px 0;
 }
 
 .flex-row-center {
@@ -56,9 +57,21 @@ ul { list-style: none; }
 .top-left-menu {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   flex: 1;
+}
+
+.menu-circle-icon {
+  background: var(--abah-blue);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .top-center-search {
@@ -73,76 +86,68 @@ ul { list-style: none; }
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 30px;
-  padding: 2px 2px 2px 15px;
+  padding: 4px 4px 4px 18px;
   width: 100%;
-  max-width: 350px;
+  max-width: 380px;
+  transition: border-color 0.3s;
 }
 
-.top-right-group {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  flex: 1;
-}
-
-.menu-circle-icon {
-  background: var(--abah-blue);
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-label { 
-  font-weight: 800; 
-  color: #444; 
-  font-size: 14px; 
-}
-
-.btn-blue-pill {
-  background: var(--abah-blue);
-  color: #fff !important;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 12px;
-  border: none;
-}
-
-.btn-outline-pill {
-  color: var(--abah-blue) !important;
-  border: 1.5px solid var(--abah-blue);
-  padding: 5px 16px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 12px;
+.search-pill-container:focus-within {
+  border-color: var(--abah-blue);
 }
 
 .search-pill-input { 
   border: none; 
   outline: none; 
   width: 100%; 
-  font-size: 13px; 
+  font-size: 14px; 
 }
 
 .search-pill-button {
   background: var(--abah-blue);
   border: none;
-  width: 34px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.top-right-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.btn-blue-pill {
+  background: var(--abah-blue);
+  color: #fff !important;
+  padding: 8px 20px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-outline-pill {
+  color: var(--abah-blue) !important;
+  border: 2px solid var(--abah-blue);
+  padding: 6px 18px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 /* ================= LOGO SECTION ================= */
 .logo-section { 
-  padding: 25px 0; 
-  background: #fff; 
+  padding: 30px 0; 
+  background: #ffffff; 
 }
 
 .logo-flex-wrapper { 
@@ -154,62 +159,47 @@ ul { list-style: none; }
   width: fit-content;
 }
 
-.logo-rounded { 
-  border-radius: 50%; 
-  flex-shrink: 0; 
-}
-
-.logo-text-box {
-  display: flex !important;
-  flex-direction: column !important;
-  text-align: left;
-}
-
 .main-logo-title { 
-  font-size: 34px; 
+  font-size: 38px; 
   font-weight: 900; 
-  color: var(--abah-blue); /* Warna PCM (Biru) */
+  color: var(--abah-blue); 
   margin: 0; 
   line-height: 1; 
   font-style: italic;
   letter-spacing: -1.5px;
-  /* Shadow halus untuk dasar */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* ANTI-SILAU: Trik agar KEMBARAN Jelas Terbaca */
+/* ANTI-SILAU: KEMBARAN di Latar Putih */
 .main-logo-title span.yellow { 
   color: var(--abah-gold) !important; 
-  /* Memberikan garis tepi tipis agar huruf terpisah dari putih */
-  -webkit-text-stroke: 0.5px var(--abah-blue); 
-  /* Shadow biru deep agar warna kuning makin 'pop' keluar */
-  text-shadow: 2px 2px 4px rgba(0, 74, 142, 0.4);
-  display: inline-block;
+  -webkit-text-stroke: 0.8px var(--abah-blue); /* Garis tepi agar terbaca jelas */
+  text-shadow: 2px 2px 4px rgba(0, 74, 142, 0.2);
 }
 
-/* FIX: Pastikan .COM Jadi Abu-abu Tipis */
 .main-logo-title span.gray { 
-  color: #ccc !important; 
+  color: #bbbbbb !important; 
   font-weight: 300; 
-  -webkit-text-stroke: 0; /* Menghilangkan stroke di bagian .COM */
+  -webkit-text-stroke: 0;
   text-shadow: none;
 }
 
 .tagline {
-  font-size: 14px;
-  color: #666;
-  margin: 4px 0 0 0;
-  font-weight: 500;
-  line-height: 1;
+  font-size: 15px;
+  color: #777;
+  margin: 6px 0 0 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-/* ================= NAVBAR & LAYOUT ================= */
+/* ================= MAIN NAV ================= */
 .main-nav { 
   background: var(--abah-blue); 
-  border-bottom: 4px solid var(--abah-gold); 
+  border-bottom: 5px solid var(--abah-gold); 
   position: sticky;
   top: 0;
   z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .nav-menu-list { 
@@ -222,23 +212,208 @@ ul { list-style: none; }
 .nav-anchor { 
   display: flex; 
   align-items: center; 
-  height: 48px; 
-  padding: 0 20px; 
-  color: #fff !important; 
-  font-weight: 700; 
-  font-size: 13px; 
+  height: 52px; 
+  padding: 0 25px; 
+  color: #ffffff !important; 
+  font-weight: 800; 
+  font-size: 13.5px; 
   white-space: nowrap; 
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.nav-anchor:hover { 
+.nav-anchor:hover, .nav-anchor.active { 
   background: var(--abah-gold) !important; 
   color: var(--abah-blue) !important; 
 }
 
+/* ================= GRID LAYOUT ================= */
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 340px;
-  gap: 30px;
-  margin-top: 25px;
+  gap: 40px;
+  margin-top: 30px;
+  margin-bottom: 50px;
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 992px) {
+  .content-grid {
+    grid-template-columns: 1fr; /* Sidebar pindah ke bawah */
+    gap: 30px;
+  }
+  
+  .top-center-search {
+    display: none; /* Sembunyikan search bar di tablet/HP agar tidak sesak */
+  }
+
+  .main-logo-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-flex-wrapper {
+    gap: 15px;
+  }
+  
+  .logo-rounded {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .btn-blue-pill, .btn-outline-pill {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .nav-anchor {
+    padding: 0 15px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-section {
+    padding: 20px 0;
+  }
+
+  .main-logo-title {
+    font-size: 22px;
+  }
+
+  .tagline {
+    font-size: 12px;
+  }
+
+  .menu-label {
+    display: none; /* Hanya tampilkan ikon menu di HP sangat kecil */
+  }
+}
+/* ================= NEWS CARD STYLING ================= */
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.news-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.news-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Bagian Gambar */
+.news-card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.news-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.news-card:hover .news-card-image img {
+  transform: scale(1.1);
+}
+
+/* Badge Kategori */
+.category-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: var(--abah-gold);
+  color: var(--abah-blue);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Konten Teks */
+.news-card-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.news-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s;
+}
+
+.news-card:hover .news-card-title {
+  color: var(--abah-blue);
+}
+
+.news-card-excerpt {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+/* Footer Card: Info Tanggal & Pembaca */
+.news-card-footer {
+  margin-top: auto;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #999;
+  font-size: 12px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.meta-item svg {
+  color: var(--abah-blue);
+}
+
+/* RESPONSIVE: Penyesuaian di HP */
+@media (max-width: 600px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .news-card-title {
+    font-size: 16px;
+  }
 }

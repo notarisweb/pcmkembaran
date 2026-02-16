@@ -1,31 +1,37 @@
-// app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next"; // Tambahkan import Viewport
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
+// 1. KONFIGURASI VIEWPORT (Wajib dipisah di Next.js 15)
+export const viewport: Viewport = {
+  themeColor: "#004a8e", // Warna Biru PCM resmi
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+// 2. GLOBAL METADATA
 export const metadata: Metadata = {
-  // 1. Alamat dasar website
+  // Alamat dasar website untuk SEO
   metadataBase: new URL('https://pcmkembaran.com'), 
 
   title: {
-    // Sinkronisasi dengan tagline terbaru
+    // Tagline utama PCM Kembaran
     default: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
     template: "%s | PCM Kembaran"
   },
   description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi dakwah berkemajuan yang mencerahkan kehidupan jamaah.",
   keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Berkemajuan", "Literasi Islam", "Khutbah Jumat"],
 
-  // === FITUR PWA START ===
+  // === KONFIGURASI PWA ===
   manifest: "/manifest.json", 
-  themeColor: "#004a8e", // Warna Biru PCM
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "PCM Kembaran",
   },
-  // === FITUR PWA END ===
   
-  // 2. Open Graph (WhatsApp, Facebook, LinkedIn)
+  // 3. Open Graph (WhatsApp & Facebook Preview)
   openGraph: {
     title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
     description: "Menyajikan konten dakwah murni yang menyejukkan, mencerahkan, dan berkemajuan bagi umat.",
@@ -35,15 +41,15 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/opengraph-image.jpg', 
+        url: '/opengraph-image.jpg', // Pastikan file ini ada di folder /public
         width: 1200,
         height: 630,
-        alt: 'Thumbnail PCM Kembaran',
+        alt: 'PCM Kembaran',
       },
     ],
   },
 
-  // 3. Twitter Card
+  // 4. Twitter/X Card
   twitter: {
     card: 'summary_large_image',
     title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
@@ -53,14 +59,21 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    apple: "/icons/icon-192x192.png", // Ikon PWA untuk perangkat Apple
+    apple: "/icons/icon-192x192.png", // Ikon untuk perangkat iPhone/iPad
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className="antialiased" style={{ backgroundColor: '#fcfcfc', color: '#1a1a1a' }}>
+      <body 
+        className="antialiased" 
+        style={{ 
+          backgroundColor: '#fcfcfc', // Abu-abu sangat muda agar logo biru terlihat kontras
+          color: '#1a1a1a',
+          margin: 0 
+        }}
+      >
         <LayoutWrapper>
           {children}
         </LayoutWrapper>

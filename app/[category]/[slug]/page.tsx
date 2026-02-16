@@ -1,18 +1,62 @@
 import { getSinglePost, getRelatedPosts } from "@/lib/sanity.query"; 
+import { Metadata } from "next";
 import { PortableText } from "@portabletext/react";
 import urlBuilder from "@sanity/image-url";
 import { client } from "@/lib/sanity.client";
 import Link from "next/link";
 import ViewCounter from "@/components/ViewCounter"; 
-import ShareButtons from "@/components/ShareButtons"; // Komponen Client untuk Interaktivitas
+import ShareButtons from "@/components/ShareButtons";
 
-// 1. DEFINISI URL BUILDER (HANYA SEKALI)
+// 1. KONFIGURASI VIEWPORT (Standar Next.js 15)
+export const viewport = {
+  themeColor: "#004a8e",
+  width: "device-width",
+  initialScale: 1,
+};
+
+// 2. FUNGSI METADATA DINAMIS (Solusi Pratinjau Gambar & URL)
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ category: string, slug: string }> 
+}): Promise<Metadata> {
+  const { category, slug } = await params;
+  const post = await getSinglePost(slug);
+
+  if (!post) return { title: "Postingan Tidak Ditemukan" };
+
+  const url = `https://pcmkembaran.com/${category}/${slug}`;
+  const imageFallback = "https://pcmkembaran.com/logo-md.png";
+
+  return {
+    title: post.title,
+    description: post.excerpt || "Baca informasi terbaru dari PCM Kembaran",
+    alternates: { canonical: url },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: url, // Memastikan URL artikel, bukan beranda
+      siteName: "PCM Kembaran",
+      images: [{ url: post.image || imageFallback, width: 1200, height: 630 }],
+      locale: "id_ID",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image || imageFallback],
+    },
+  };
+}
+
+// 3. DEFINISI URL BUILDER (Hanya Sekali)
 const builder = urlBuilder(client);
 function urlFor(source: any) {
   return builder.image(source);
 }
 
-// 2. KOMPONEN PORTABLE TEXT UNTUK RENDER KONTEN
+// 4. KOMPONEN PORTABLE TEXT UNTUK RENDER KONTEN
 const ptComponents = {
   types: {
     image: ({ value }: any) => {
@@ -58,7 +102,7 @@ export default async function PostDetail({
 
   return (
     <main className="post-detail-main">
-      {/* TRIGGER UPDATE VIEWS */}
+      {/* TRIGGER UPDATE JUMLAH PEMBACA */}
       <ViewCounter slug={slug} />
       
       {/* 1. BREADCRUMB */}
@@ -85,7 +129,6 @@ export default async function PostDetail({
                 <div className="author-text">
                   <span className="author-name">Redaksi PCM Kembaran</span>
                   
-                  {/* TAMPILAN TANGGAL & JUMLAH PEMBACA DENGAN IKON MATA */}
                   <div className="post-meta-details">
                     <span className="post-date">
                       {new Date(post.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -115,7 +158,7 @@ export default async function PostDetail({
             {post.body && <PortableText value={post.body} components={ptComponents} />}
           </div>
 
-          {/* RELATED POSTS */}
+          {/* 3. RELATED POSTS */}
           {relatedPosts && relatedPosts.length > 0 && (
             <section className="related-section">
               <h3 className="related-heading">Postingan Terkait</h3>
@@ -159,6 +202,7 @@ export default async function PostDetail({
         </aside>
       </div>
 
+      {/* 5. CSS STYLES */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root { --abah-blue: #004a8e; --abah-gold: #ffc107; }
         .post-detail-main { max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: sans-serif; }
@@ -166,12 +210,13 @@ export default async function PostDetail({
         .breadcrumb-link { text-decoration: none; color: #888; }
         .breadcrumb-category { text-decoration: none; color: var(--abah-blue); font-weight: bold; text-transform: capitalize; }
         .breadcrumb-current { color: #333; font-weight: 500; }
+
         .main-grid-layout { display: grid; grid-template-columns: 1fr 340px; gap: 40px; }
         .main-title { font-size: 36px; font-weight: 900; line-height: 1.2; margin-bottom: 20px; color: #1a1a1a; }
         .meta-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
         .author-info { display: flex; align-items: center; gap: 12px; }
         .author-avatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 1px solid #eee; }
-        .author-text { display: column; }
+        .author-text { display: flex; flex-direction: column; } /* FIXED */
         .author-name { font-weight: bold; color: #333; font-size: 15px; }
 
         .post-meta-details { display: flex; align-items: center; gap: 8px; color: #888; font-size: 12px; margin-top: 4px; }
@@ -194,11 +239,14 @@ export default async function PostDetail({
           border-width: 7px 0 7px 7px; border-style: solid; border-color: transparent transparent transparent #e0e0e0;
         }
         .share-icons-wrapper { display: flex; align-items: center; gap: 8px; }
-        .share-icon-box { width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: none; transition: transform 0.2s; }
+        .share-icon-box { 
+          width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; 
+          text-decoration: none; border: none; transition: transform 0.2s;
+        }
         
         .bg-fb { background-color: #3b5998; } 
         .bg-x { background-color: #000000; } 
-        .bg-ig { background-color: #E4405F; } 
+        .bg-ig { background-color: #E4405F !important; } /* WARNA IG AGAR TIDAK BOLONG */
         .bg-wa { background-color: #25D366; } 
         .bg-tg { background-color: #2ca5e0; } 
         .bg-link { background-color: #444; }
@@ -236,6 +284,7 @@ export default async function PostDetail({
         @media (max-width: 992px) {
           .main-grid-layout { grid-template-columns: 1fr !important; }
           .sidebar { margin-top: 40px; }
+          .share-buttons-container { overflow-x: auto; padding-bottom: 10px; width: 100%; }
         }
         @media (max-width: 768px) { .related-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) {
@@ -243,7 +292,6 @@ export default async function PostDetail({
           .share-text { display: none; }
           .main-title { font-size: 26px; }
           .post-meta-details { flex-wrap: wrap; }
-          .share-buttons-container { overflow-x: auto; padding-bottom: 10px; width: 100%; }
         }
       `}} />
     </main>
