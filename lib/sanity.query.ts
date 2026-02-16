@@ -12,60 +12,61 @@ export async function getAllPosts() {
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      publishedAt,
-      category,
-      views
+      "publishedAt": publishedAt,
+      "category": coalesce(categories[0]->title, category, "Umum"),
+      "views": coalesce(views, 0)
     }`
   );
 }
 
 /**
- * 2. Ambil Berita Terbaru (Headline)
+ * 2. Ambil Berita Terbaru (Headline & Top News)
+ * PERBAIKAN: Mengecek referensi kategori DAN teks kategori biasa (case-insensitive)
  */
 export async function getNewsPosts() {
   return client.fetch(
-    groq`*[_type == "post" && category == "berita"] | order(publishedAt desc)[0...6] {
+    groq`*[_type == "post" && (categories[0]->title match "Berita" || category match "berita")] | order(publishedAt desc)[0...6] {
       _id,
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      publishedAt,
-      category,
-      views
+      "publishedAt": publishedAt,
+      "category": "Berita",
+      "views": coalesce(views, 0)
     }`
   );
 }
 
 /**
- * 3. Ambil Artikel Terbaru (Sidebar)
+ * 3. Ambil Artikel Terbaru (Sidebar Pilihan)
  */
 export async function getArticlePosts() {
   return client.fetch(
-    groq`*[_type == "post" && category == "artikel"] | order(publishedAt desc)[0...5] {
+    groq`*[_type == "post" && (categories[0]->title match "Artikel" || category match "artikel")] | order(publishedAt desc)[0...5] {
       _id,
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      publishedAt,
-      category,
-      views
+      "publishedAt": publishedAt,
+      "category": "Artikel",
+      "views": coalesce(views, 0)
     }`
   );
 }
 
 /**
- * 4. Fungsi DINAMIS untuk Halaman Rubrik
+ * 4. Fungsi Dinamis Rubrik
  */
 export async function getPostsByCategory(categoryName: string) {
   return client.fetch(
-    groq`*[_type == "post" && category == $categoryName] | order(publishedAt desc) {
+    groq`*[_type == "post" && (categories[0]->title match $categoryName || category match $categoryName)] | order(publishedAt desc) {
       _id,
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      publishedAt,
-      category,
-      views,
+      "publishedAt": publishedAt,
+      "category": coalesce(categories[0]->title, category, $categoryName),
+      "views": coalesce(views, 0),
       "excerpt": array::join(string::split(pt::text(body), "")[0...150], "") + "..."
     }`,
     { categoryName }
@@ -84,8 +85,8 @@ export async function getSinglePost(slug: string) {
       "slug": slug.current,
       "image": mainImage.asset->url,
       publishedAt,
-      category,
-      views,
+      "category": coalesce(categories[0]->title, category, "Umum"),
+      "views": coalesce(views, 0),
       body,
       "author": author->name
     }`,
@@ -94,18 +95,18 @@ export async function getSinglePost(slug: string) {
 }
 
 /**
- * 6. PERBAIKAN: Ambil Khutbah Terbaru (Missing Export)
+ * 6. Ambil Naskah Khutbah Terbaru
  */
 export async function getKhutbahPosts() {
   return client.fetch(
-    groq`*[_type == "post" && category == "khutbah"] | order(publishedAt desc)[0...5] {
+    groq`*[_type == "post" && (categories[0]->title match "Khutbah" || category match "khutbah")] | order(publishedAt desc)[0...5] {
       _id,
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      publishedAt,
-      category,
-      views
+      "publishedAt": publishedAt,
+      "category": "Khutbah",
+      "views": coalesce(views, 0)
     }`
   );
 }
@@ -115,13 +116,38 @@ export async function getKhutbahPosts() {
  */
 export async function getRelatedPosts(category: string, currentSlug: string) {
   return client.fetch(
-    groq`*[_type == "post" && category == $category && slug.current != $currentSlug][0...3] {
+    groq`*[_type == "post" && (categories[0]->title match $category || category match $category) && slug.current != $currentSlug][0...3] {
       _id,
       title,
       "slug": slug.current,
       "image": mainImage.asset->url,
-      category
+      "category": coalesce(categories[0]->title, category, $category)
     }`,
     { category, currentSlug }
   );
+}
+
+/**
+ * 8. Fungsi Pencarian Global
+ */
+export async function getSearchedPosts(searchQuery: string) {
+  if (!searchQuery) return [];
+
+  try {
+    return await client.fetch(
+      groq`*[_type in ["post", "khutbah"] && (title match $searchQuery || pt::text(body) match $searchQuery)] | order(publishedAt desc) {
+        _id,
+        title,
+        "slug": slug.current,
+        "image": mainImage.asset->url,
+        "category": coalesce(categories[0]->title, category, "Umum"),
+        "publishedAt": publishedAt,
+        "views": coalesce(views, 0)
+      }`,
+      { searchQuery: `*${searchQuery}*` }
+    );
+  } catch (error) {
+    console.error("Gagal melakukan pencarian:", error);
+    return [];
+  }
 }

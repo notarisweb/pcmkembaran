@@ -3,38 +3,39 @@ import Link from "next/link";
 import { getArticlePosts } from "@/lib/sanity.query";
 
 export default async function LatestArticlesSidebar() {
+  // Mengambil data artikel pilihan dari Sanity (Project ID: deyoeizv)
   const articles = await getArticlePosts();
 
-  /** * PALET WARNA KHUSUS BACKGROUND GELAP
-   * Menggunakan warna yang lebih cerah agar kontras dengan biru PCM.
+  /** * PALET WARNA NEON UNTUK BACKGROUND GELAP
+   * Menggunakan opasitas 0.4 agar warna angka terlihat menyala namun tetap elegan.
    */
   const rankColors = [
-    'rgba(255, 204, 0, 0.4)',   // 01: Gold
-    'rgba(0, 255, 127, 0.3)',   // 02: Spring Green
-    'rgba(0, 191, 255, 0.4)',   // 03: Deep Sky Blue
-    'rgba(255, 105, 180, 0.4)',  // 04: Hot Pink
-    'rgba(255, 255, 255, 0.3)',  // 05: Silver/White
+    'rgba(255, 204, 0, 0.45)',   // 01: Gold (Identitas PCM)
+    'rgba(0, 255, 127, 0.35)',   // 02: Spring Green
+    'rgba(0, 191, 255, 0.45)',   // 03: Deep Sky Blue
+    'rgba(255, 105, 180, 0.45)',  // 04: Hot Pink
+    'rgba(255, 255, 255, 0.35)',  // 05: Silver/White
   ];
 
   return (
     <div style={{ 
       backgroundColor: 'var(--abah-blue)', 
-      borderRadius: '15px', 
+      borderRadius: '16px', 
       padding: '30px 20px', 
       color: '#fff',
-      boxShadow: '0 10px 30px rgba(0,74,142,0.15)',
+      boxShadow: '0 12px 40px rgba(0,74,142,0.2)',
       height: '100%',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* HEADER DENGAN AKSEN EMAS */}
+      {/* HEADER SIDEBAR */}
       <div style={{ 
         borderBottom: '2px solid var(--abah-gold)', 
         paddingBottom: '15px', 
         marginBottom: '25px',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px'
+        gap: '12px'
       }}>
         <span style={{ fontSize: '20px' }}>⭐</span>
         <h4 style={{ 
@@ -49,8 +50,8 @@ export default async function LatestArticlesSidebar() {
         </h4>
       </div>
 
-      {/* LIST ARTIKEL DENGAN ANGKA URUTAN WARNA-WARNI */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* LIST ARTIKEL DENGAN ANGKA URUTAN TEBAL */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
         {articles.slice(0, 5).map((item: any, index: number) => (
           <Link 
             href={`/${item.category}/${item.slug}`} 
@@ -59,19 +60,19 @@ export default async function LatestArticlesSidebar() {
               textDecoration: 'none', 
               color: '#fff', 
               display: 'flex',
-              alignItems: 'center', // Agar angka sejajar tengah dengan teks
-              gap: '15px',
-              paddingBottom: '15px',
+              alignItems: 'center', 
+              gap: '18px',
+              paddingBottom: '18px',
               borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}
           >
-            {/* ANGKA URUTAN BESAR, TEBAL & WARNA-WARNI */}
+            {/* ANGKA URUTAN: Arial Black agar sangat tebal */}
             <span style={{ 
-              fontSize: '40px', 
+              fontSize: '42px', 
               fontWeight: '1000', 
               color: rankColors[index] || 'rgba(255,255,255,0.2)', 
               lineHeight: '1',
-              minWidth: '50px',
+              minWidth: '55px',
               fontStyle: 'italic',
               fontFamily: 'Arial Black, sans-serif'
             }}>
@@ -84,13 +85,18 @@ export default async function LatestArticlesSidebar() {
                 fontWeight: '700', 
                 lineHeight: '1.5', 
                 margin: 0,
-                color: '#f8f8f8'
+                color: '#f8f8f8',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
               }}>
                 {item.title}
               </h5> 
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', opacity: 0.8 }}>
-                <span>
+                {/* FIX HYDRATION: Menambahkan suppressHydrationWarning */}
+                <span suppressHydrationWarning>
                   {new Date(item.publishedAt).toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'short'
@@ -98,11 +104,13 @@ export default async function LatestArticlesSidebar() {
                 </span>
                 <span>•</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
-                  <span style={{ fontWeight: '600' }}>{item.views || 0}</span>
+                  <span style={{ fontWeight: '800', color: 'var(--abah-gold)' }}>
+                    {item.views || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -110,19 +118,22 @@ export default async function LatestArticlesSidebar() {
         ))}
       </div>
 
+      {/* TOMBOL LIHAT SEMUA */}
       <div style={{ marginTop: 'auto', paddingTop: '30px' }}>
         <Link href="/artikel" style={{ 
           display: 'block',
           textAlign: 'center',
           backgroundColor: 'var(--abah-gold)',
           color: 'var(--abah-blue)',
-          padding: '12px',
-          borderRadius: '8px',
+          padding: '14px',
+          borderRadius: '10px',
           fontSize: '13px',
-          fontWeight: '900',
+          fontWeight: '1000',
           textDecoration: 'none',
           textTransform: 'uppercase',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+          letterSpacing: '1px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          transition: 'transform 0.2s'
         }}>
           Semua Artikel ❯
         </Link>

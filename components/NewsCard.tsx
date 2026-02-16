@@ -7,12 +7,12 @@ type NewsCardProps = {
   date?: string;
   slug?: string;
   category?: string;
-  views?: number; // Menambahkan prop views dari Sanity
+  views?: number;
 };
 
 export default function NewsCard({
   title = "Judul Berita",
-  image = "/logo-md.png", // Default ke logo PCM jika gambar kosong
+  image = "/logo-md.png",
   date,
   slug = "#",
   category = "Berita",
@@ -20,10 +20,13 @@ export default function NewsCard({
 }: NewsCardProps) {
   
   /** * LOGIKA NAVIGASI DINAMIS: 
-   * Menggunakan category asli agar sinkron dengan routing [category]/[slug]
+   * Memastikan slug kategori bersih untuk URL (contoh: "Info Dakwah" -> "info-dakwah")
    */
   const path = category.toLowerCase().replace(/\s+/g, "-");
 
+  /** * FORMAT TANGGAL:
+   * Menggunakan "id-ID" agar sesuai dengan bahasa Indonesia.
+   */
   const formattedDate = date 
     ? new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -40,31 +43,34 @@ export default function NewsCard({
         <div style={{ 
           width: '100%', 
           aspectRatio: '16/9', 
-          borderRadius: '10px', 
+          borderRadius: '12px', 
           overflow: 'hidden', 
-          marginBottom: '12px',
+          marginBottom: '14px',
           backgroundColor: '#f8f9fa',
           position: 'relative',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
         }}>
           <img 
             src={image} 
             alt={title} 
             loading="lazy" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
           />
-          {/* Badge Kategori PCM */}
+          
+          {/* Badge Kategori PCM Kembaran */}
           <div style={{
             position: 'absolute',
-            top: '10px',
-            left: '10px',
+            top: '12px',
+            left: '12px',
             backgroundColor: 'var(--abah-blue)',
             color: '#fff',
-            fontSize: '9px',
-            fontWeight: '800',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            textTransform: 'uppercase'
+            fontSize: '10px',
+            fontWeight: '900',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
           }}>
             {category}
           </div>
@@ -73,38 +79,39 @@ export default function NewsCard({
         {/* 2. KONTEN TEKS */}
         <div className="news-card-content">
           <h3 style={{ 
-            fontSize: '16px', 
+            fontSize: '17px', 
             fontWeight: '800', 
             color: '#1a1a1a', 
             lineHeight: '1.4',
-            margin: '0 0 8px 0',
+            margin: '0 0 10px 0',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            height: '44px' // Menjaga ketinggian agar grid tetap sejajar
+            height: '46px' // Menjaga kerapihan grid
           }}>
             {title}
           </h3>
           
-          {/* 3. METADATA: TANGGAL & VIEWS (Fitur Admin Editable) */}
+          {/* 3. METADATA: TANGGAL & VIEWS */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            fontSize: '11px', 
-            color: '#999',
-            fontWeight: '500'
+            fontSize: '12px', 
+            color: '#888',
+            fontWeight: '600'
           }}>
-            <span>{formattedDate}</span>
+            {/* PENTING: suppressHydrationWarning untuk mencegah error di browser */}
+            <span suppressHydrationWarning>{formattedDate}</span>
             
-            {/* Tampilan Views dengan Ikon Mata */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {/* Tampilan Views dengan Ikon Mata yang dipertebal */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              <span style={{ color: 'var(--abah-gold)', fontWeight: '700' }}>
+              <span style={{ color: 'var(--abah-gold)', fontWeight: '800' }}>
                 {views}
               </span>
             </div>

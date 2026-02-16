@@ -1,24 +1,24 @@
-// components/PopularSidebar.tsx
 import { getNewsPosts } from "@/lib/sanity.query";
 import Link from "next/link";
 
 export default async function PopularSidebar() {
-  // Mengambil berita terbaru dari Sanity
+  // Mengambil berita terbaru dari Sanity (Project ID: deyoeizv)
   const popularData = await getNewsPosts();
 
   /** * PALET WARNA UNTUK ANGKA 01 - 05
-   * Menggunakan format RGBA agar warna tetap "tebal" tapi tidak menutupi teks.
+   * Menggunakan format RGBA agar warna tetap "tebal" namun transparan di belakang teks.
    */
   const rankColors = [
-    'rgba(0, 74, 142, 0.2)',   // 01: Biru PCM
-    'rgba(40, 167, 69, 0.2)',   // 02: Hijau Segar
-    'rgba(230, 77, 49, 0.2)',   // 03: Merah Jingga
+    'rgba(0, 74, 142, 0.2)',    // 01: Biru PCM
+    'rgba(40, 167, 69, 0.2)',    // 02: Hijau Segar
+    'rgba(230, 77, 49, 0.2)',    // 03: Merah Jingga
     'rgba(255, 152, 0, 0.25)',  // 04: Oranye Emas
     'rgba(156, 39, 176, 0.2)',  // 05: Ungu Elegan
   ];
 
   return (
-    <section style={{ height: '480px', display: 'flex', flexDirection: 'column' }}>
+    <section style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* HEADER: TERPOPULER DENGAN AKSEN EMAS */}
       <h2 style={{ 
         fontSize: '18px', 
         color: 'var(--abah-blue)', 
@@ -32,7 +32,8 @@ export default async function PopularSidebar() {
         Terpopuler
       </h2>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* LIST BERITA TERPOPULER */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {popularData.slice(0, 5).map((news: any, index: number) => (
           <Link 
             href={`/${news.category}/${news.slug}`} 
@@ -47,11 +48,11 @@ export default async function PopularSidebar() {
               alignItems: 'center'
             }}
           >
-            {/* PERBAIKAN: Angka Rank dengan Warna Berbeda-beda */}
+            {/* ANGKA URUTAN BESAR & TEBAL */}
             <span style={{ 
               fontSize: '42px', 
               fontWeight: '1000', 
-              color: rankColors[index] || '#f0f0f0', // Mengambil dari array warna
+              color: rankColors[index] || '#f0f0f0', 
               lineHeight: '1',
               minWidth: '50px',
               fontStyle: 'italic',
@@ -92,29 +93,13 @@ export default async function PopularSidebar() {
           </Link>
         ))}
         
+        {/* FALLBACK JIKA DATA KOSONG */}
         {popularData.length === 0 && (
           <p style={{ fontSize: '12px', color: '#888', textAlign: 'center', padding: '20px' }}>
             Belum ada data populer.
           </p>
         )}
       </div>
-
-      <Link href="/berita" style={{ 
-        marginTop: '20px',
-        padding: '14px', 
-        textAlign: 'center',
-        color: '#ffffff', 
-        fontWeight: '800', 
-        fontSize: '13px', 
-        textDecoration: 'none',
-        backgroundColor: 'var(--abah-blue)',
-        borderRadius: '8px',
-        textTransform: 'uppercase',
-        letterSpacing: '1px',
-        boxShadow: '0 4px 6px rgba(0,74,142,0.2)'
-      }}>
-        Lihat Semua Berita
-      </Link>
     </section>
   );
 }
