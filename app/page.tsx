@@ -8,6 +8,7 @@ import LatestPosts from "@/components/LatestPosts";
 import KhutbahSidebar from "@/components/KhutbahSidebar";
 import InfoDakwah from "@/components/InfoDakwah";
 import LatestArticlesSidebar from "@/components/LatestArticlesSidebar";
+import NotificationButton from "@/components/NotificationButton"; // FIX: Import komponen melayang
 
 // Menjamin data dari Project ID: deyoeizv selalu segar
 export const dynamic = 'force-dynamic';
@@ -25,10 +26,11 @@ export default async function Home() {
       padding: '0 20px', 
       minHeight: '100vh', 
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      position: 'relative' // Base untuk koordinat elemen melayang
     }}>
       
-      {/* 1. TOP NEWS - Sembunyi di HP agar loading lebih ringan */}
+      {/* 1. TOP NEWS - Sembunyi di HP */}
       <div className="hide-on-mobile">
         <TopNews />
       </div>
@@ -43,13 +45,13 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* 3. REKOMENDASI - GARIS PEMBATAS DIHAPUS */}
+      {/* 3. REKOMENDASI */}
       <section className="hide-on-mobile" style={{ marginTop: '50px', paddingTop: '20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
           <div>
             <RecommendationSection allData={allPosts} />
           </div>
-          <aside style={{ paddingLeft: '0' }}> {/* Border-left dihapus agar tampilan seamless */}
+          <aside style={{ paddingLeft: '0' }}>
             <LatestArticlesSidebar />
           </aside>
         </div>
@@ -62,9 +64,8 @@ export default async function Home() {
         gap: '40px', 
         marginTop: '50px',
         paddingBottom: '60px',
-        flex: 1 // Memaksa footer tetap di bawah meskipun konten sedikit
+        flex: 1 
       }}>
-        {/* KOLOM KIRI: Postingan Terbaru (TAMPIL DI HP) */}
         <div className="content-latest">
           <h2 style={{ fontSize: '22px', color: 'var(--abah-blue)', fontWeight: '900', marginBottom: '25px', textTransform: 'uppercase' }}>
             Postingan <span style={{ color: 'var(--abah-gold)' }}>Terbaru</span>
@@ -72,11 +73,22 @@ export default async function Home() {
           <LatestPosts />
         </div>
 
-        {/* KOLOM KANAN: Khutbah & Info Dakwah (TAMPIL DI HP) */}
         <div className="sidebar-dakwah" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           <KhutbahSidebar articles={khutbahData} />
           <InfoDakwah />
         </div>
+      </div>
+
+      {/* === TOMBOL MELAYANG (FLOATING ACTION BUTTON) === */}
+      <div className="floating-notif-container" style={{
+        position: 'fixed',
+        bottom: '30px',
+        right: '30px',
+        zIndex: 2000, // Menjamin berada di atas konten apapun
+        filter: 'drop-shadow(0 8px 20px rgba(0,74,142,0.4))', // Bayangan khas FAB agar melayang nyata
+        transition: 'all 0.3s ease'
+      }}>
+        <NotificationButton />
       </div>
 
       {/* CSS KHUSUS MOBILE DENGAN CLASS SPESIFIK */}
@@ -90,10 +102,16 @@ export default async function Home() {
             gap: 30px !important;
             margin-top: 20px !important;
           }
-          /* Urutan tampilan di HP: Headline -> Terbaru -> Khutbah/Info */
           .content-headline { order: 1; }
           .content-latest { order: 2; }
           .sidebar-dakwah { order: 3; }
+
+          /* Penyesuaian tombol melayang agar lebih manis di layar HP */
+          .floating-notif-container {
+            bottom: 20px !important;
+            right: 20px !important;
+            transform: scale(0.85); /* Sedikit lebih kecil di HP */
+          }
         }
       `}} />
     </div>

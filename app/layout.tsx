@@ -3,12 +3,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
-/** * METADATA: Dioptimalkan untuk SEO dan Media Sosial.
- * Pastikan Anda memiliki file gambar bernama 'opengraph-image.jpg' di dalam folder /public.
- */
 export const metadata: Metadata = {
-  // 1. Alamat dasar website (Penting agar link gambar tidak error)
-  metadataBase: new URL('https://pcmkembaran.com'), //
+  // 1. Alamat dasar website
+  metadataBase: new URL('https://pcmkembaran.com'), 
 
   title: {
     default: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
@@ -16,8 +13,18 @@ export const metadata: Metadata = {
   },
   description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi kegiatan dakwah yang mencerahkan jamaah.",
   keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Islam", "Khutbah Jumat", "Berita Muhammadiyah"],
+
+  // === FITUR PWA START ===
+  manifest: "/manifest.json", 
+  themeColor: "#004a8e", // Warna Biru PCM untuk status bar
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "PCM Kembaran",
+  },
+  // === FITUR PWA END ===
   
-  // 2. Open Graph (Untuk WhatsApp, Facebook, LinkedIn)
+  // 2. Open Graph
   openGraph: {
     title: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
     description: "Wadah edukasi dan literasi Islam yang menyajikan konten murni, menyejukkan, dan mencerahkan.",
@@ -27,7 +34,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/opengraph-image.jpg', // File ini harus ada di folder /public
+        url: '/opengraph-image.jpg', 
         width: 1200,
         height: 630,
         alt: 'Thumbnail PCM Kembaran',
@@ -35,16 +42,17 @@ export const metadata: Metadata = {
     ],
   },
 
-  // 3. Twitter Card (Untuk tampilan besar di X/Twitter)
+  // 3. Twitter Card
   twitter: {
     card: 'summary_large_image',
     title: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
     description: "Portal resmi PCM Kembaran. Informasi dakwah dan khutbah terbaru.",
-    images: ['/opengraph-image.jpg'], // Gunakan gambar yang sama
+    images: ['/opengraph-image.jpg'], 
   },
 
   icons: {
     icon: "/favicon.ico",
+    apple: "/icons/icon-192x192.png", // Ikon khusus perangkat Apple
   },
 };
 
