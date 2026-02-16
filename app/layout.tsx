@@ -8,15 +8,16 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://pcmkembaran.com'), 
 
   title: {
-    default: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
+    // Sinkronisasi dengan tagline terbaru
+    default: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
     template: "%s | PCM Kembaran"
   },
-  description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi kegiatan dakwah yang mencerahkan jamaah.",
-  keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Islam", "Khutbah Jumat", "Berita Muhammadiyah"],
+  description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi dakwah berkemajuan yang mencerahkan kehidupan jamaah.",
+  keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Berkemajuan", "Literasi Islam", "Khutbah Jumat"],
 
   // === FITUR PWA START ===
   manifest: "/manifest.json", 
-  themeColor: "#004a8e", // Warna Biru PCM untuk status bar
+  themeColor: "#004a8e", // Warna Biru PCM
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -24,10 +25,10 @@ export const metadata: Metadata = {
   },
   // === FITUR PWA END ===
   
-  // 2. Open Graph
+  // 2. Open Graph (WhatsApp, Facebook, LinkedIn)
   openGraph: {
-    title: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
-    description: "Wadah edukasi dan literasi Islam yang menyajikan konten murni, menyejukkan, dan mencerahkan.",
+    title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
+    description: "Menyajikan konten dakwah murni yang menyejukkan, mencerahkan, dan berkemajuan bagi umat.",
     url: 'https://pcmkembaran.com',
     siteName: 'PCM Kembaran',
     locale: 'id_ID',
@@ -45,14 +46,14 @@ export const metadata: Metadata = {
   // 3. Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: "PCM Kembaran - Pimpinan Cabang Muhammadiyah Kembaran",
-    description: "Portal resmi PCM Kembaran. Informasi dakwah dan khutbah terbaru.",
+    title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
+    description: "Informasi dakwah, edukasi Islam, dan naskah khutbah terbaru yang mencerahkan.",
     images: ['/opengraph-image.jpg'], 
   },
 
   icons: {
     icon: "/favicon.ico",
-    apple: "/icons/icon-192x192.png", // Ikon khusus perangkat Apple
+    apple: "/icons/icon-192x192.png", // Ikon PWA untuk perangkat Apple
   },
 };
 

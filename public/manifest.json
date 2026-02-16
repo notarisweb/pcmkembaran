@@ -1,22 +1,65 @@
 {
   "name": "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
-  "short_name": "PCMKembaran",
-  "description": "Situs resmi Pimpinan Cabang Muhammadiyah Kembaran",
+  "short_name": "PCM Kembaran",
+  "description": "Portal resmi Pimpinan Cabang Muhammadiyah Kembaran. Wadah edukasi, literasi Islam, dan informasi kegiatan dakwah.",
+  "lang": "id-ID",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#004a8e",
+  "categories": ["education", "news", "lifestyle"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tampilan Beranda Mobile"
+    },
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tampilan Beranda Desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Naskah Khutbah",
+      "short_name": "Khutbah",
+      "description": "Akses langsung daftar naskah khutbah Jumat terbaru",
+      "url": "/khutbah",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Berita Terbaru",
+      "short_name": "Berita",
+      "description": "Baca kabar terbaru dari lingkungan PCM Kembaran",
+      "url": "/berita",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
