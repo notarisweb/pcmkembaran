@@ -179,7 +179,7 @@ export default function Header() {
               <h1 style={{ color: 'var(--abah-blue)', margin: 0, fontSize: '32px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '-1.5px' }}>
                 PCM <span style={{ color: 'var(--abah-gold)' }}>KEMBARAN</span>
               </h1>
-              <p style={{ fontSize: '13px', color: '#666', fontWeight: '500', textTransform: 'uppercase' }}>Menggali Ilmu, Membuka Cahaya</p>
+              <p style={{ fontSize: '13px', color: '#666', fontWeight: '500', textTransform: 'uppercase' }}>Dakwah Berkemajuan, Mencerahkan Kehidupan</p>
             </div>
           </Link>
         </div>

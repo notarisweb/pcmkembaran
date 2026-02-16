@@ -61,7 +61,7 @@ export default function Footer() {
         textTransform: 'uppercase',
         letterSpacing: '0.5px'
       }}>
-        MENGGALI ILMU, MEMBUKA CAHAYA
+        Dakwah Berkemajuan, Mencerahkan Kehidupan
       </span>
     </div>
   </Link>
