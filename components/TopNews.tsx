@@ -3,27 +3,30 @@ import { getNewsPosts } from "@/lib/sanity.query";
 import Link from "next/link";
 
 export default async function TopNews() {
-  const allNews = await getNewsPosts();
+  const allNews = await getNewsPosts() || [];
   
-  /** * LOGIKA PINTAR:
-   * Jika total berita lebih dari 8, kita pakai urutan ke 4-8 (hindari duplikat Headline).
-   * Jika berita masih sedikit, kita tampilkan saja 5 berita pertama agar grid penuh.
-   */
+  // LOGIKA PINTAR: Hindari duplikasi dengan Headline Utama
   const topBarNews = allNews.length > 8 
     ? allNews.slice(3, 8) 
     : allNews.slice(0, 5); 
 
+  // Jika data kosong, tampilkan placeholder agar layout tidak pecah
+  if (topBarNews.length === 0) return null;
+
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(5, 1fr)', 
-      gap: '15px', 
-      padding: '20px 0',
-      borderBottom: '1px solid #eee' 
-    }}>
+    <div 
+      className="hide-on-mobile" // Konsisten dengan class di layout utama
+      style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(5, 1fr)', 
+        gap: '15px', 
+        padding: '20px 0',
+        borderBottom: '1px solid var(--border-light)' 
+      }}
+    >
       {topBarNews.map((item: any) => (
         <Link 
-          href={`/${item.category}/${item.slug}`} 
+          href={`/${item.category || 'berita'}/${item.slug?.current || item.slug}`} 
           key={item._id} 
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
@@ -54,7 +57,7 @@ export default async function TopNews() {
             </div>
 
             <h4 style={{ 
-              fontSize: '12px', fontWeight: '800', color: '#004a8e',
+              fontSize: '12px', fontWeight: '800', color: 'var(--abah-blue)',
               lineHeight: '1.4', margin: '0 0 5px 0', height: '34px',
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
               overflow: 'hidden'
@@ -62,7 +65,11 @@ export default async function TopNews() {
               {item.title}
             </h4>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#999' }}>
+            {/* suppressHydrationWarning ditambahkan pada data angka yang dinamis */}
+            <div 
+              suppressHydrationWarning
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#999' }}
+            >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>

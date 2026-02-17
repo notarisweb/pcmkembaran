@@ -22,7 +22,6 @@ export default function Header() {
     { name: "Liputan Dakwah", slug: "liputan-dakwah" },
     { name: "Pendidikan", slug: "pendidikan" },
     { name: "Video", slug: "video" },
-    { name: "Bisnis", slug: "bisnis" },
     { name: "Tokoh & Inspirasi", slug: "tokoh-inspirasi" },
     { name: "Teknologi", slug: "teknologi" },
     { name: "Kesehatan", slug: "kesehatan" },

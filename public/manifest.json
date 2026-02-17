@@ -1,13 +1,13 @@
 {
   "name": "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
   "short_name": "PCM Kembaran",
-  "description": "Portal resmi Pimpinan Cabang Muhammadiyah Kembaran. Wadah edukasi, literasi Islam, dan informasi kegiatan dakwah.",
+  "description": "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi kegiatan dakwah berkemajuan.",
   "lang": "id-ID",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
+  "background_color": "#fcfcfc",
   "theme_color": "#004a8e",
   "categories": ["education", "news", "lifestyle"],
   "icons": [
@@ -50,14 +50,14 @@
     {
       "name": "Naskah Khutbah",
       "short_name": "Khutbah",
-      "description": "Akses langsung daftar naskah khutbah Jumat terbaru",
+      "description": "Daftar naskah khutbah Jumat mencerahkan",
       "url": "/khutbah",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Berita Terbaru",
+      "name": "Informasi Berita",
       "short_name": "Berita",
-      "description": "Baca kabar terbaru dari lingkungan PCM Kembaran",
+      "description": "Kabar terbaru kegiatan PCM Kembaran",
       "url": "/berita",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }

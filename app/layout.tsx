@@ -1,6 +1,8 @@
-import type { Metadata, Viewport } from "next"; // Tambahkan import Viewport
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
+// Impor sensor pelacak instalasi otomatis
+import InstallationTracker from "@/components/InstallationTracker"; 
 
 // 1. KONFIGURASI VIEWPORT (Wajib dipisah di Next.js 15)
 export const viewport: Viewport = {
@@ -77,6 +79,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
+        
+        {/* Sensor otomatis yang menangkap sinyal 'appinstalled' dari browser jamaah */}
+        <InstallationTracker /> 
       </body>
     </html>
   );
