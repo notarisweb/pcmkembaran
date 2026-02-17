@@ -17,15 +17,23 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
 
 export default async function Home() {
-  // 1. Multi-Query untuk Bento Grid (Dibuat luas agar tidak hilang saat kategori berubah)
+  // 1. Multi-Query untuk Bento Grid (Diperluas untuk kategori Unduhan)
   const bentoQuery = `{
-    "latestKhutbah": *[_type == "post"] | order(publishedAt desc)[0],
+    "latestPost": *[_type == "post"] | order(publishedAt desc)[0] {
+      title,
+      category,
+      publishedAt,
+      slug,
+      "fileUrl": fileSource.asset->url, // Menarik URL file jika ada unggahan langsung
+      downloadLink,                     // Menarik link luar (GDrive/Dropbox)
+      fileSize
+    },
     "installCount": count(*[_type == "installations"]),
     "leader": *[_type == "board"] | order(order asc)[0],
     "profile": *[_type == "profile"][0]
   }`;
 
-  // 2. Fetching data secara paralel untuk performa maksimal
+  // 2. Fetching data secara paralel
   const allPosts = await getAllPosts() || [];
   const khutbahData = await getKhutbahPosts() || [];
   const bentoData = await client.fetch(bentoQuery); 
@@ -61,8 +69,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* === 3. BENTO DASHBOARD - Terletak di bawah Headline agar mencerahkan === */}
-      {/* Pengecekan data bentoData dilakukan agar dashboard selalu muncul jika ada post */}
+      {/* === 3. BENTO DASHBOARD - Mecerahkan di bawah Headline === */}
       <section style={{ marginTop: '45px' }}>
         <BentoDashboard data={bentoData} />
       </section>
@@ -113,7 +120,6 @@ export default async function Home() {
         <NotificationButton />
       </div>
 
-      {/* CSS RESPONSIF INTERNAL */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 992px) {
           .hide-on-mobile { display: none !important; }

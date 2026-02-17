@@ -43,6 +43,37 @@ export default {
       },
       validation: (Rule) => Rule.required(),
     },
+    
+    /* ============================================================
+       KOLOM KHUSUS UNDUHAN (Muncul Hanya Jika Kategori 'Unduhan')
+       ============================================================ */
+    {
+      name: 'fileSource',
+      title: 'Upload File Langsung',
+      type: 'file',
+      description: 'Gunakan ini untuk mengunggah file PDF/Dokumen langsung ke Sanity.',
+      options: {
+        accept: '.pdf,.doc,.docx,.zip'
+      },
+      // Munculkan HANYA jika kategori == 'unduhan'
+      hidden: ({ document }) => document?.category !== 'unduhan',
+    },
+    {
+      name: 'downloadLink',
+      title: 'Link Unduhan (Luar)',
+      type: 'url',
+      description: 'Masukkan link Google Drive/Dropbox jika file sudah ada di sana.',
+      hidden: ({ document }) => document?.category !== 'unduhan',
+    },
+    {
+      name: 'fileSize',
+      title: 'Keterangan File',
+      type: 'string',
+      description: 'Contoh: PDF, 2.5 MB, atau Versi 1.0',
+      hidden: ({ document }) => document?.category !== 'unduhan',
+    },
+    /* ============================================================ */
+
     {
       name: 'mainImage',
       title: 'Gambar Utama',
@@ -50,6 +81,7 @@ export default {
       options: {
         hotspot: true, 
       },
+      // Tetap muncul untuk semua kategori agar tampilan kartu tetap cantik
     },
     {
       name: 'publishedAt',
@@ -57,7 +89,6 @@ export default {
       type: 'datetime',
       initialValue: () => (new Date()).toISOString(),
     },
-    /* --- FITUR TAMBAHAN: JUMLAH PEMBACA (EDITABLE) --- */
     {
       name: 'views',
       title: 'Jumlah Pembaca (Views)',
@@ -65,10 +96,9 @@ export default {
       description: 'Admin bisa mengisi atau mengubah angka ini agar tampilan views terlihat keren di website.',
       initialValue: 0,
     },
-    /* ------------------------------------------------ */
     {
       name: 'body',
-      title: 'Isi Konten',
+      title: 'Isi Konten / Deskripsi',
       type: 'array',
       of: [
         { 

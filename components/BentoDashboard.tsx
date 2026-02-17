@@ -5,21 +5,27 @@ import { Text, Heading, Flex, Badge, ThemeProvider, studioTheme } from '@sanity/
 import Link from 'next/link'
 
 export default function BentoDashboard({ data }: { data: any }) {
-  const { latestKhutbah, installCount, leader, profile } = data
+  // latestPost ditarik dari bentoQuery di app/page.tsx
+  const { latestPost, installCount, leader, profile } = data
+
+  // LOGIKA CERDAS: Cek apakah konten ini adalah unduhan
+  const isDownload = latestPost?.category === 'unduhan'
+  const downloadUrl = latestPost?.fileUrl || latestPost?.downloadLink
+  const buttonLink = isDownload ? downloadUrl : `/${latestPost?.category || 'berita'}/${latestPost?.slug?.current || ''}`
 
   return (
     <ThemeProvider theme={studioTheme}>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 max-w-7xl mx-auto">
         
-        {/* 1. KARTU UTAMA: POSTINGAN TERBARU (DINAMIS) */}
+        {/* 1. KARTU UTAMA: POSTINGAN/UNDUHAN TERBARU */}
         <motion.div 
           whileHover={{ y: -5 }}
           className="md:col-span-2 md:row-span-2 bg-[#004a8e] text-white p-8 rounded-[2rem] flex flex-col justify-between shadow-xl relative overflow-hidden"
         >
           <div className="relative z-10">
-            {/* PERBAIKAN: Label Badge mengikuti kategori dari data Sanity */}
+            {/* Badge Dinamis sesuai kategori */}
             <Badge 
-              tone="caution" 
+              tone={isDownload ? "positive" : "caution"} 
               style={{ 
                 marginBottom: '1rem', 
                 display: 'inline-block', 
@@ -27,28 +33,44 @@ export default function BentoDashboard({ data }: { data: any }) {
                 fontWeight: '800'
               }}
             >
-              {latestKhutbah?.category ? `${latestKhutbah.category} TERBARU` : 'KONTEN TERBARU'}
+              {latestPost?.category ? `${latestPost.category} TERBARU` : 'KONTEN TERBARU'}
             </Badge>
 
             <Heading size={3} style={{ lineHeight: '1.2', marginBottom: '1rem', color: 'white' }}>
-              {latestKhutbah?.title || 'Menanti Konten Terkini'}
+              {latestPost?.title || 'Menanti Konten Terkini'}
             </Heading>
 
             <Text size={1} style={{ color: '#e0e0e0' }}>
-              {latestKhutbah?.publishedAt 
-                ? new Date(latestKhutbah.publishedAt).toLocaleDateString('id-ID', { dateStyle: 'long' }) 
+              {latestPost?.publishedAt 
+                ? new Date(latestPost.publishedAt).toLocaleDateString('id-ID', { dateStyle: 'long' }) 
                 : 'Tanggal belum tersedia'}
             </Text>
           </div>
 
-          {/* PERBAIKAN: Link href dinamis berdasarkan kategori (misal: /artikel/judul atau /khutbah/judul) */}
-          <Link 
-            href={`/${latestKhutbah?.category || 'berita'}/${latestKhutbah?.slug?.current || ''}`} 
-            className="relative z-10 mt-8 inline-block bg-[#ffc107] text-[#004a8e] font-bold px-6 py-3 rounded-full w-fit hover:bg-white transition-colors"
-          >
-            Baca Selengkapnya
-          </Link>
+          {/* TOMBOL ADAPTIF: Berubah fungsi jika kategori 'Unduhan' */}
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <a 
+              href={buttonLink}
+              target={isDownload ? "_blank" : "_self"}
+              rel={isDownload ? "noopener noreferrer" : ""}
+              className="relative z-10 mt-8 inline-flex items-center gap-2 bg-[#ffc107] text-[#004a8e] font-bold px-8 py-4 rounded-full w-fit hover:bg-white transition-colors shadow-lg"
+            >
+              {isDownload ? (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  UNDUH SEKARANG {latestPost?.fileSize ? `(${latestPost.fileSize})` : ''}
+                </>
+              ) : (
+                "Baca Selengkapnya"
+              )}
+            </a>
+          </motion.div>
 
+          {/* Dekorasi mencerahkan */}
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#ffc107] opacity-10 rounded-full blur-3xl"></div>
         </motion.div>
 
