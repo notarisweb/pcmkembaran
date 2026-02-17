@@ -7,7 +7,7 @@ const TopArticlesWidget = () => {
   const client = useClient({ apiVersion: '2024-01-01' })
 
   useEffect(() => {
-    // GROQ: Mengambil 5 naskah/berita dengan jumlah pembaca terbanyak
+    // GROQ: Mengambil 5 naskah/berita dengan jumlah pembaca (views) terbanyak
     const query = '*[_type == "post"] | order(views desc) [0...5] { _id, title, views }'
     
     client.fetch(query)
@@ -22,12 +22,12 @@ const TopArticlesWidget = () => {
       radius={3} 
       style={{ 
         background: '#fff',
-        borderTop: '5px solid #ffc107', // Konsisten dengan aksen Matahari PCM
+        borderTop: '5px solid #ffc107', // Aksen Kuning Matahari Muhammadiyah
         height: '100%'
       }}
     >
       <Stack space={4}>
-        {/* Header Widget yang Formal & Mencerahkan */}
+        {/* Header Widget Formal Biru PCM */}
         <Heading 
           size={1} 
           style={{ 
@@ -53,7 +53,7 @@ const TopArticlesWidget = () => {
                   borderBottom: idx === posts.length - 1 ? 'none' : '1px dotted #eee' 
                 }}
               >
-                {/* Judul Artikel dengan Efek Elipsis jika terlalu panjang */}
+                {/* Waduh judulnya panjang? Kita gunakan Elipsis agar tetap rapi */}
                 <Box style={{ flex: 1, paddingRight: '15px' }}>
                   <Text 
                     weight="bold" 
@@ -70,7 +70,7 @@ const TopArticlesWidget = () => {
                   </Text>
                 </Box>
 
-                {/* Badge Jumlah Pembaca (Ikon Mata) */}
+                {/* Indikator Jumlah Pembaca (Views) */}
                 <Badge tone="primary" padding={2} radius={2}>
                   <Flex align="center" gap={2}>
                     <Text size={0} weight="bold">{post.views || 0}</Text>

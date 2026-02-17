@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useClient } from 'sanity'
-import { Card, Text, Flex, Heading, Box, Container } from '@sanity/ui'
+import { Card, Text, Flex, Heading, Box } from '@sanity/ui'
 
 const InstallCountWidget = () => {
   const [count, setCount] = useState<number | null>(null)
@@ -54,8 +54,8 @@ const InstallCountWidget = () => {
         </Box>
 
         <Flex align="center" gap={2}>
-          {/* Badge Sederhana untuk keterangan */}
-          <Box 
+          {/* PERBAIKAN: Mengganti Box menjadi Card agar properti 'radius' valid */}
+          <Card 
             padding={2} 
             radius={2} 
             style={{ background: '#f0f4f8', borderLeft: '3px solid #004a8e' }}
@@ -63,7 +63,7 @@ const InstallCountWidget = () => {
             <Text size={1} weight="semibold" style={{ color: '#004a8e' }}>
               Aplikasi PCM Kembaran
             </Text>
-          </Box>
+          </Card>
         </Flex>
         
         <Text size={0} muted style={{ fontStyle: 'italic' }}>

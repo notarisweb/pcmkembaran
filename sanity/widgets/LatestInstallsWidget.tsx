@@ -54,8 +54,8 @@ const LatestInstallsWidget = () => {
                 }}
               >
                 <Flex align="center" gap={3}>
-                  {/* Indikator Platform Sederhana */}
-                  <Box 
+                  {/* PERBAIKAN: Mengganti Box menjadi Card agar properti 'radius' valid */}
+                  <Card 
                     padding={2} 
                     radius={2} 
                     style={{ background: '#f0f4f8' }}
@@ -63,7 +63,7 @@ const LatestInstallsWidget = () => {
                     <Text size={0} weight="bold" style={{ color: '#004a8e' }}>
                       {item.platform === 'Android' ? '📱' : '🌐'}
                     </Text>
-                  </Box>
+                  </Card>
                   
                   <Box>
                     <Text weight="bold" size={1} style={{ color: '#1a1a1a' }}>
