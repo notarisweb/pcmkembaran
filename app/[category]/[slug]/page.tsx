@@ -259,6 +259,12 @@ export default async function PostDetail({
         .image-caption { font-size: 14px; color: #666; margin-top: 10px; font-style: italic; }
 
         .related-section { margin-top: 60px; border-top: 4px solid var(--abah-blue); padding-top: 30px; }
+		.related-heading {
+  font-size: 34px;   /* ubah 36px kalau mau lebih besar */
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
         .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .related-card { text-decoration: none; color: inherit; }
         .related-thumb { width: 100%; aspect-ratio: 16/9; background-color: #f0f0f0; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
