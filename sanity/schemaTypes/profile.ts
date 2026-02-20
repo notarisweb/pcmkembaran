@@ -6,7 +6,6 @@ export default defineType({
   title: 'Profil Cabang',
   type: 'document',
   icon: InfoOutlineIcon,
-  // Mengelompokkan bidang agar Studio lebih rapi
   fieldsets: [
     { name: 'identity', title: 'Identitas & Sejarah' },
     { name: 'visionMission', title: 'Visi & Misi' },
@@ -25,7 +24,6 @@ export default defineType({
       title: 'Sejarah Singkat',
       type: 'array',
       of: [{ type: 'block' }],
-      description: 'Tuliskan sejarah berdirinya PCM Kembaran',
       fieldset: 'identity',
     }),
     defineField({
@@ -33,7 +31,6 @@ export default defineType({
       title: 'Visi',
       type: 'text',
       rows: 3,
-      description: 'Visi utama PCM Kembaran',
       fieldset: 'visionMission',
     }),
     defineField({
@@ -41,21 +38,13 @@ export default defineType({
       title: 'Misi',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'Daftar poin-poin misi (Klik "Add item" untuk menambah poin)',
+      description: 'Daftar poin misi (Klik "Add item")',
       fieldset: 'visionMission',
     }),
     defineField({
       name: 'address',
       title: 'Alamat Kantor PCM',
       type: 'text',
-      rows: 2,
-      fieldset: 'contact',
-    }),
-    defineField({
-      name: 'location',
-      title: 'Titik Koordinat (Gmaps URL)',
-      type: 'url',
-      description: 'Tempelkan link berbagi dari Google Maps',
       fieldset: 'contact',
     }),
     defineField({
@@ -71,12 +60,4 @@ export default defineType({
       fieldset: 'contact',
     }),
   ],
-  preview: {
-    prepare() {
-      return {
-        title: 'Pengaturan Profil Cabang',
-        subtitle: 'Visi, Misi, dan Kontak PCM',
-      }
-    },
-  },
 })

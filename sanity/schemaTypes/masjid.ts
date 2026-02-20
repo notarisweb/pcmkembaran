@@ -1,19 +1,24 @@
 import { defineField, defineType } from 'sanity'
+import { HomeIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'masjid',
-  title: 'Daftar Masjid',
+  title: 'Data Masjid',
   type: 'document',
+  icon: HomeIcon,
   fields: [
     defineField({
       name: 'name',
       title: 'Nama Masjid',
       type: 'string',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'address',
       title: 'Alamat Lengkap',
       type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'image',
@@ -22,22 +27,18 @@ export default defineType({
       options: { hotspot: true },
     }),
     defineField({
-      name: 'googleMapsUrl',
+      name: 'locationUrl',
       title: 'Link Google Maps',
       type: 'url',
+      description: 'Tempelkan link "Share" dari Google Maps di sini',
     }),
     defineField({
-      name: 'facilities',
-      title: 'Fasilitas Masjid',
-      type: 'array',
-      of: [{ type: 'string' }],
-      options: {
-        list: [
-          { title: 'Area Parkir', value: 'parkir' },
-          { title: 'AC', value: 'ac' },
-          { title: 'Perpustakaan', value: 'perpustakaan' },
-        ],
-      },
+      name: 'order',
+      title: 'Urutan Tampil',
+      type: 'number',
     }),
   ],
+  preview: {
+    select: { title: 'name', subtitle: 'address', media: 'image' },
+  },
 })
