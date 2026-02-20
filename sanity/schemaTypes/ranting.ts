@@ -1,69 +1,54 @@
 import { defineField, defineType } from 'sanity'
+import { MapIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'ranting',
   title: 'Data Ranting (PRM)',
   type: 'document',
+  icon: MapIcon,
   fields: [
     defineField({
       name: 'name',
-      title: 'Nama Ranting',
+      title: 'Nama Ranting (PRM)',
       type: 'string',
-      placeholder: 'Contoh: PRM Kembaran',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'name' },
+      name: 'leader',
+      title: 'Ketua Ranting',
+      type: 'string',
+    }),
+    defineField({
+      name: 'latitude',
+      title: 'Latitude',
+      type: 'string',
+      description: 'Contoh: -7.425678',
+    }),
+    defineField({
+      name: 'longitude',
+      title: 'Longitude',
+      type: 'string',
+      description: 'Contoh: 109.289123',
     }),
     defineField({
       name: 'address',
-      title: 'Alamat Kantor',
+      title: 'Alamat / Wilayah',
       type: 'text',
+      rows: 2,
     }),
     defineField({
-      name: 'phone',
-      title: 'Nomor HP/WA Pengurus',
-      type: 'string',
+      name: 'image',
+      title: 'Foto Ranting',
+      type: 'image',
+      options: { hotspot: true },
     }),
     defineField({
-      name: 'boardMembers',
-      title: 'Susunan Pengurus Ranting',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'name', title: 'Nama Lengkap', type: 'string' },
-            { 
-              name: 'position', 
-              title: 'Jabatan', 
-              type: 'string', 
-              options: { list: ['Ketua', 'Sekretaris', 'Bendahara', 'Anggota'] } 
-            },
-          ],
-        },
-      ],
-    }),
-    defineField({
-      name: 'aumList',
-      title: 'Daftar AUM',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'aumName', title: 'Nama AUM', type: 'string' },
-            { 
-              name: 'aumCategory', 
-              title: 'Jenis AUM', 
-              type: 'string', 
-              options: { list: ['Pendidikan', 'Kesehatan', 'Sosial', 'Ekonomi'] } 
-            },
-          ],
-        },
-      ],
+      name: 'order',
+      title: 'Urutan',
+      type: 'number',
     }),
   ],
+  preview: {
+    select: { title: 'name', subtitle: 'leader', media: 'image' },
+  },
 })

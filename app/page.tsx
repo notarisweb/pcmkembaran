@@ -1,4 +1,3 @@
-// app/page.tsx
 import { client } from "@/lib/sanity.client"; 
 import { getAllPosts, getKhutbahPosts } from "@/lib/sanity.query";
 import Headline from "@/components/Headline";
@@ -17,20 +16,27 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
 
 export default async function Home() {
-  // 1. Multi-Query untuk Bento Grid (Diperluas untuk kategori Unduhan)
+  // 1. Multi-Query untuk Bento Grid (Ditambahkan field nbm untuk identitas pimpinan)
   const bentoQuery = `{
     "latestPost": *[_type == "post"] | order(publishedAt desc)[0] {
       title,
       category,
       publishedAt,
       slug,
-      "fileUrl": fileSource.asset->url, // Menarik URL file jika ada unggahan langsung
-      downloadLink,                     // Menarik link luar (GDrive/Dropbox)
+      "fileUrl": fileSource.asset->url,
+      downloadLink,
       fileSize
     },
     "installCount": count(*[_type == "installations"]),
-    "leader": *[_type == "board"] | order(order asc)[0],
-    "profile": *[_type == "profile"][0]
+    "leader": *[_type == "pimpinan" && category == "harian"] | order(order asc)[0] {
+      name,
+      nbm, // <--- Field NBM sekarang ditarik dari Sanity
+      position,
+      "photoUrl": photo.asset->url
+    },
+    "profile": *[_type == "profile"][0],
+    "rantingCount": count(*[_type == "ranting"]),
+    "masjidCount": count(*[_type == "masjid"])
   }`;
 
   // 2. Fetching data secara paralel

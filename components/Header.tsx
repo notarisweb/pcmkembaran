@@ -28,8 +28,20 @@ export default function Header() {
     { name: "Unduhan", slug: "unduhan" },
   ];
 
+  // Menu untuk Lapis 4
+  const lapis4Menus = [
+    { name: "Profile", slug: "profile" },
+    { name: "Struktur Pimpinan", slug: "pimpinan" },
+    { name: "Ranting", slug: "ranting" },
+    { name: "Data Masjid", slug: "masjid" },
+    { name: "Data AUM", slug: "aum" },
+    { name: "Download", slug: "download" },
+    { name: "Gallery", slug: "galeri" },
+    { name: "Kontak", slug: "kontak" },
+  ];
+
   const orgMenus = [
-    { name: "Profil Cabang", slug: "profil" },
+    { name: "Profil Cabang", slug: "profile" },
     { name: "Majelis & Lembaga", slug: "lembaga" },
     { name: "Data Ranting (PRM)", slug: "ranting" },
     { name: "Daftar Masjid", slug: "masjid" },
@@ -50,9 +62,23 @@ export default function Header() {
           background-color: var(--abah-gold) !important;
           color: #000000 !important;
         }
-        .nav-menu-list::-webkit-scrollbar { display: none; }
-        .nav-menu-list { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-menu-list::-webkit-scrollbar, .lapis4-list::-webkit-scrollbar { display: none; }
+        .nav-menu-list, .lapis4-list { -ms-overflow-style: none; scrollbar-width: none; }
         
+        .lapis4-link {
+          color: #444 !important;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 11px;
+          padding: 10px 15px;
+          display: block;
+          white-space: nowrap;
+          transition: 0.2s;
+        }
+        .lapis4-link:hover {
+          color: var(--abah-blue) !important;
+        }
+
         @media (max-width: 992px) {
           .top-center-search { display: none !important; }
         }
@@ -68,8 +94,6 @@ export default function Header() {
           margin: '0 auto', 
           padding: '0 15px' 
         }}>
-          
-          {/* KIRI: WRAPPER HAMBURGER (flex: 1) */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
             <div 
               className="hamburger-toggle" 
@@ -82,7 +106,6 @@ export default function Header() {
             </div>
           </div>
 
-          {/* TENGAH: SEARCH PILL (flex: 1 & True Center) */}
           <div className="top-center-search" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
             <form onSubmit={handleSearch} style={{ 
               display: 'flex', 
@@ -121,11 +144,10 @@ export default function Header() {
             </form>
           </div>
 
-          {/* KANAN: TOMBOL DONASI & MASUK (flex: 1) */}
           <div className="top-right-group" style={{ flex: 1, display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <Link href="https://sociabuzz.com/pcmkembaran/tribe" style={{ 
               backgroundColor: 'var(--abah-blue)', 
-              color: '#ffffff !important', // Tulisan Donasi Putih
+              color: '#ffffff !important', 
               padding: '6px 15px', 
               borderRadius: '20px', 
               fontSize: '11px', 
@@ -184,36 +206,59 @@ export default function Header() {
         </div>
       </div>
 
-      {/* LAPIS 3: MENU BAR BIRU */}
-      <nav className="main-nav" style={{ backgroundColor: 'var(--abah-blue)', borderBottom: '2px solid var(--abah-gold)', position: 'sticky', top: 0, zIndex: 1000 }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <ul className="nav-menu-list" style={{ display: 'flex', listStyle: 'none', padding: 0, margin: 0, overflowX: 'auto' }}>
-            <li style={{ backgroundColor: 'var(--abah-gold)' }}>
-              <Link href="/" style={{ display: 'flex', alignItems: 'center', height: '48px', padding: '0 20px', color: '#000', fontWeight: '800', textDecoration: 'none' }}>HOME</Link>
-            </li>
-            {categoryMenus.map((m) => (
-              <li key={m.slug}>
-                <Link 
-                  href={`/${m.slug}`} 
-                  className="nav-link-item"
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    height: '48px', 
-                    padding: '0 20px', 
-                    fontWeight: '700', 
-                    fontSize: '12px', 
-                    whiteSpace: 'nowrap', 
-                    textTransform: 'uppercase' 
-                  }}
-                >
-                  {m.name}
-                </Link>
+      {/* STICKY CONTAINER FOR LAPIS 3 & 4 */}
+      <div className="sticky-nav-group" style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+        
+        {/* LAPIS 3: MENU BAR BIRU */}
+        <nav className="main-nav" style={{ backgroundColor: 'var(--abah-blue)', borderBottom: '2px solid var(--abah-gold)' }}>
+          <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <ul className="nav-menu-list" style={{ display: 'flex', listStyle: 'none', padding: 0, margin: 0, overflowX: 'auto' }}>
+              <li style={{ backgroundColor: 'var(--abah-gold)' }}>
+                <Link href="/" style={{ display: 'flex', alignItems: 'center', height: '48px', padding: '0 20px', color: '#000', fontWeight: '800', textDecoration: 'none' }}>HOME</Link>
               </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+              {categoryMenus.map((m) => (
+                <li key={m.slug}>
+                  <Link 
+                    href={`/${m.slug}`} 
+                    className="nav-link-item"
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      height: '48px', 
+                      padding: '0 20px', 
+                      fontWeight: '700', 
+                      fontSize: '12px', 
+                      whiteSpace: 'nowrap', 
+                      textTransform: 'uppercase' 
+                    }}
+                  >
+                    {m.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+
+        {/* LAPIS 4: ORGANIZATIONAL MENU (DETIK STYLE) */}
+        <nav className="secondary-nav" style={{ backgroundColor: '#f9f9f9', borderBottom: '1px solid #eee' }}>
+          <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <ul className="lapis4-list" style={{ display: 'flex', listStyle: 'none', padding: 0, margin: 0, overflowX: 'auto' }}>
+              {lapis4Menus.map((m, index) => (
+                <li key={m.slug} style={{ display: 'flex', alignItems: 'center' }}>
+                  <Link href={`/${m.slug}`} className="lapis4-link">
+                    {m.name.toUpperCase()}
+                  </Link>
+                  {index < lapis4Menus.length - 1 && (
+                    <span style={{ color: '#ccc', fontSize: '10px' }}>|</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+
+      </div>
     </header>
   );
 }
