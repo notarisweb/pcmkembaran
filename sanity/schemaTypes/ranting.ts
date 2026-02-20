@@ -19,6 +19,12 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'nbm',
+      title: 'NBM Ketua',
+      type: 'string',
+      description: 'Nomor Baku Muhammadiyah Ketua Ranting',
+    }),
+    defineField({
       name: 'latitude',
       title: 'Latitude',
       type: 'string',
