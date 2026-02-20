@@ -1,11 +1,11 @@
 import { defineField, defineType } from 'sanity'
-import { MapIcon } from '@sanity/icons'
+import { PinIcon } from '@sanity/icons' // Ganti MapIcon menjadi PinIcon atau MarkerIcon
 
 export default defineType({
   name: 'ranting',
   title: 'Data Ranting (PRM)',
   type: 'document',
-  icon: MapIcon,
+  icon: PinIcon, // Gunakan PinIcon di sini
   fields: [
     defineField({
       name: 'name',

@@ -10,7 +10,7 @@ async function getRantingData() {
   try {
     return await client.fetch(query, {}, { cache: 'no-store' });
   } catch (error) {
-    console.error("Gagal mengambil data:", error);
+    console.error("Gagal mengambil data Ranting:", error);
     return [];
   }
 }
@@ -25,7 +25,7 @@ export default async function RantingPage() {
   const centerLng = "109.2892";
 
   return (
-    <main id="pcm-ranting-premium-final" style={{ background: '#f8fafc', padding: '60px 0' }}>
+    <main id="pcm-ranting-final" style={{ background: '#f8fafc', padding: '60px 0' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
         
         <header style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -33,7 +33,7 @@ export default async function RantingPage() {
           <div style={{ width: '70px', height: '5px', background: '#ffc107', margin: '15px auto', borderRadius: '10px' }}></div>
         </header>
 
-        {/* GRID KARTU */}
+        {/* GRID KARTU RANTING */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px', marginBottom: '80px' }}>
           {rantings.map((prm: any) => (
             <div key={prm._id} style={{ background: '#fff', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
@@ -50,7 +50,7 @@ export default async function RantingPage() {
                 <hr style={{ margin: '15px 0', borderColor: '#f1f5f9' }} />
                 <p style={{ fontSize: '14px', color: '#64748b' }}>{prm.address}</p>
                 {prm.latitude && (
-                  <a href={`https://www.google.com/maps?q=${prm.latitude},${prm.longitude}`} target="_blank" style={{ display: 'inline-block', marginTop: '15px', color: '#004a8e', fontWeight: 800, textDecoration: 'none', fontSize: '13px' }}>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${prm.latitude},${prm.longitude}`} target="_blank" style={{ display: 'inline-block', marginTop: '15px', color: '#004a8e', fontWeight: 800, textDecoration: 'none', fontSize: '13px' }}>
                     📍 Petunjuk Lokasi →
                   </a>
                 )}
@@ -63,7 +63,7 @@ export default async function RantingPage() {
         <section style={{ background: '#fff', padding: '30px', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#004a8e', marginBottom: '20px' }}>PETA SEBARAN DAKWAH</h2>
           <iframe 
-            src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15825.0!2d${centerLng}!3d${centerLat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1710000000000`}
+            src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d31644.06!2d${centerLng}!3d${centerLat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1710000000000`}
             width="100%" height="400" style={{ border: 0, borderRadius: '15px' }} allowFullScreen loading="lazy"
           ></iframe>
         </section>
