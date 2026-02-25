@@ -2,7 +2,7 @@ import { client } from "./sanity.client";
 import { groq } from "next-sanity";
 
 /**
- * 1. Ambil SEMUA postingan terbaru (Homepage)
+ * 1. Ambil SEMUA postingan terbaru (Untuk Homepage)
  */
 export async function getAllPosts() {
   return client.fetch(
@@ -93,15 +93,32 @@ export async function getSinglePost(slug: string) {
 }
 
 /**
- * 6. Postingan Terkait (BAWAH ARTIKEL)
- * PERBAIKAN: Memastikan slug yang diambil adalah string murni
+ * 6. Ambil Naskah Khutbah Terbaru (Fix Build Error)
+ */
+export async function getKhutbahPosts() {
+  return client.fetch(
+    groq`*[_type == "post" && (categories[0]->title match "Khutbah" || category match "khutbah")] | order(publishedAt desc)[0...5] {
+      _id,
+      title,
+      "slug": slug.current,
+      "image": mainImage.asset->url,
+      "publishedAt": publishedAt,
+      "category": "Khutbah",
+      "views": coalesce(views, 0)
+    }`
+  );
+}
+
+/**
+ * 7. Postingan Terkait (Bawah Artikel)
+ * Memastikan slug dikirim sebagai string agar link tidak undefined
  */
 export async function getRelatedPosts(category: string, currentSlug: string) {
   return client.fetch(
     groq`*[_type == "post" && (categories[0]->title match $category || category match $category) && slug.current != $currentSlug] | order(publishedAt desc) [0...3] {
       _id,
       title,
-      "slug": slug.current, 
+      "slug": slug.current,
       "image": mainImage.asset->url,
       "category": coalesce(categories[0]->title, category, $category)
     }`,
@@ -110,8 +127,7 @@ export async function getRelatedPosts(category: string, currentSlug: string) {
 }
 
 /**
- * 7. Ambil Postingan Terpopuler (SIDEBAR)
- * Berdasarkan jumlah views tertinggi
+ * 8. Postingan Terpopuler (Sidebar Rank)
  */
 export async function getPopularPosts() {
   return client.fetch(
@@ -119,13 +135,14 @@ export async function getPopularPosts() {
       _id,
       title,
       "slug": slug.current,
-      "category": coalesce(categories[0]->title, category, "Berita")
+      "category": coalesce(categories[0]->title, category, "Berita"),
+      "views": coalesce(views, 0)
     }`
   );
 }
 
 /**
- * 8. Fungsi Pencarian Global
+ * 9. Fungsi Pencarian Global
  */
 export async function getSearchedPosts(searchQuery: string) {
   if (!searchQuery) return [];
