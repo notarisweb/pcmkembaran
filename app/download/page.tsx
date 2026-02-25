@@ -1,23 +1,36 @@
 import { client } from "@/lib/sanity.client";
 import { Metadata } from "next";
+import Link from "next/link";
 
+// 1. KONFIGURASI VIEWPORT (Next.js 15)
+export const viewport = {
+  themeColor: "#004a8e",
+  width: "device-width",
+  initialScale: 1,
+};
+
+// 2. FUNGSI AMBIL DATA (Mendukung Tipe 'download' atau kategori 'unduhan' dari 'post')
 async function getDownloadData() {
-  const query = `*[_type == "download"] | order(order asc) {
+  const query = `*[_type == "download" || (_type == "post" && category == "unduhan")] | order(_createdAt desc) {
     _id,
     title,
     category,
-    description,
-    "fileUrl": file.asset->url,
-    "fileName": file.asset->originalFilename
+    "description": coalesce(description, excerpt, "Klik tombol di samping untuk mengunduh file."),
+    "fileUrl": fileSource.asset->url,
+    "externalLink": downloadLink,
+    "fileName": fileSource.asset->originalFilename,
+    "fileSize": fileSize
   }`;
+  
   try {
-    return await client.fetch(query, {}, { cache: 'no-store' });
+    return await client.fetch(query, {}, { next: { revalidate: 60 } });
   } catch (error) {
     console.error("Gagal mengambil data unduhan:", error);
     return [];
   }
 }
 
+// 3. METADATA HALAMAN
 export const metadata: Metadata = {
   title: "Pusat Unduhan - PCM Kembaran",
   description: "Download dokumen resmi, formulir, dan panduan Pimpinan Cabang Muhammadiyah Kembaran.",
@@ -26,17 +39,23 @@ export const metadata: Metadata = {
 export default async function DownloadPage() {
   const allDownloads = await getDownloadData();
 
+  // Definisi Kategori Dokumen
   const categories = [
     { id: 'sk', title: 'Surat Keputusan (SK)' },
     { id: 'formulir', title: 'Formulir Pendaftaran' },
     { id: 'panduan', title: 'Panduan & Edukasi' },
     { id: 'laporan', title: 'Laporan Organisasi' },
-    { id: 'lainnya', title: 'Dokumen Lainnya' },
+    { id: 'unduhan', title: 'Dokumen Umum' }, // Menampung data dari kategori 'unduhan' di tabel Post
   ];
 
   return (
     <main id="pcm-download-premium">
       <div className="pcm-container">
+        {/* BREADCRUMB */}
+        <nav className="pcm-breadcrumb">
+          <Link href="/">Home</Link> <span>/</span> <strong>Unduhan</strong>
+        </nav>
+
         <header className="pcm-hero-header">
           <span className="pcm-top-tag">REPOSITORI DOKUMEN</span>
           <h1>PUSAT UNDUHAN</h1>
@@ -46,28 +65,44 @@ export default async function DownloadPage() {
 
         <div className="pcm-download-wrapper">
           {categories.map((cat) => {
-            const files = allDownloads.filter((f: any) => f.category === cat.id);
+            // Filter file berdasarkan kategori id
+            const files = allDownloads.filter((f: any) => 
+               f.category?.toLowerCase() === cat.id.toLowerCase() || 
+               (cat.id === 'unduhan' && !['sk','formulir','panduan','laporan'].includes(f.category?.toLowerCase()))
+            );
+
             if (files.length === 0) return null;
 
             return (
               <section key={cat.id} className="pcm-download-section">
                 <h2 className="pcm-cat-title">{cat.title}</h2>
                 <div className="pcm-file-grid">
-                  {files.map((file: any) => (
-                    <div key={file._id} className="pcm-file-card">
-                      <div className="pcm-file-icon">
-                        <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                  {files.map((file: any) => {
+                    // Logika penentuan Link (File Sanity atau Link Luar)
+                    const finalLink = file.fileUrl ? `${file.fileUrl}?dl=${file.fileName || 'document'}` : file.externalLink;
+                    
+                    return (
+                      <div key={file._id} className="pcm-file-card">
+                        <div className="pcm-file-icon">
+                          <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                        </div>
+                        <div className="pcm-file-info">
+                          <h4>{file.title}</h4>
+                          <p>{file.description}</p>
+                          {file.fileSize && <span className="pcm-file-badge">{file.fileSize}</span>}
+                        </div>
+                        <a 
+                          href={finalLink} 
+                          target={file.externalLink ? "_blank" : "_self"}
+                          rel="noopener noreferrer"
+                          className="pcm-btn-download"
+                        >
+                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                          Unduh
+                        </a>
                       </div>
-                      <div className="pcm-file-info">
-                        <h4>{file.title}</h4>
-                        <p>{file.description || "Klik tombol di samping untuk mengunduh file."}</p>
-                      </div>
-                      <a href={`${file.fileUrl}?dl=${file.fileName}`} className="pcm-btn-download">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Unduh
-                      </a>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             );
@@ -79,12 +114,17 @@ export default async function DownloadPage() {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
         :root { --pcm-blue: #004a8e; --pcm-gold: #ffc107; --pcm-slate: #1e293b; }
-        #pcm-download-premium { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; padding: 60px 0 100px; }
+        #pcm-download-premium { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px 0 100px; }
         .pcm-container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
 
+        .pcm-breadcrumb { font-size: 13px; color: #888; margin-bottom: 30px; }
+        .pcm-breadcrumb a { text-decoration: none; color: #888; }
+        .pcm-breadcrumb strong { color: var(--pcm-blue); }
+
         .pcm-hero-header { text-align: center; margin-bottom: 60px; }
-        .pcm-top-tag { font-size: 13px; font-weight: 800; color: var(--pcm-blue); letter-spacing: 2px; text-transform: uppercase; }
-        .pcm-hero-header h1 { font-size: 42px; font-weight: 800; margin: 10px 0; color: var(--pcm-blue); }
+        .pcm-top-tag { font-size: 12px; font-weight: 800; color: var(--pcm-blue); letter-spacing: 2px; text-transform: uppercase; }
+        .pcm-hero-header h1 { font-size: clamp(32px, 5vw, 42px); font-weight: 800; margin: 10px 0; color: var(--pcm-blue); }
+        .pcm-hero-header p { color: #64748b; font-size: 16px; }
         .pcm-accent-line { width: 70px; height: 5px; background: var(--pcm-gold); margin: 25px auto; border-radius: 10px; }
 
         .pcm-download-section { margin-bottom: 50px; }
@@ -97,19 +137,24 @@ export default async function DownloadPage() {
         }
         .pcm-file-card:hover { border-color: var(--pcm-blue); transform: translateX(5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
-        .pcm-file-icon { background: #eff6ff; color: var(--pcm-blue); padding: 12px; border-radius: 14px; }
+        .pcm-file-icon { background: #eff6ff; color: var(--pcm-blue); padding: 12px; border-radius: 14px; flex-shrink: 0; }
         .pcm-file-info { flex-grow: 1; }
         .pcm-file-info h4 { font-size: 16px; font-weight: 800; color: #111; margin: 0 0 5px 0; }
         .pcm-file-info p { font-size: 13px; color: #64748b; margin: 0; line-height: 1.5; }
+        .pcm-file-badge { 
+          display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 800; 
+          background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; 
+        }
 
         .pcm-btn-download { 
           display: flex; align-items: center; gap: 8px; background: var(--pcm-blue); color: #fff;
-          padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; transition: 0.3s;
+          padding: 10px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; text-decoration: none; transition: 0.3s;
+          flex-shrink: 0;
         }
         .pcm-btn-download:hover { background: #003366; transform: scale(1.05); }
 
         @media (max-width: 640px) {
-          .pcm-file-card { flex-direction: column; text-align: center; }
+          .pcm-file-card { flex-direction: column; text-align: center; gap: 15px; }
           .pcm-btn-download { width: 100%; justify-content: center; }
         }
       `}} />

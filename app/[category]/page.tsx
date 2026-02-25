@@ -1,6 +1,22 @@
 import { getPostsByCategory } from "@/lib/sanity.query";
+import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
+// 1. GENERATE METADATA DINAMIS
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ category: string }> 
+}): Promise<Metadata> {
+  const { category } = await params;
+  const categoryTitle = category.replace(/-/g, ' ').toUpperCase();
+  
+  return {
+    title: `${categoryTitle} - PCM Kembaran`,
+    description: `Kumpulan informasi dan berita terbaru mengenai ${categoryTitle} di PCM Kembaran.`,
+  };
+}
 
 export default async function CategoryPage({ 
   params 
@@ -13,7 +29,14 @@ export default async function CategoryPage({
 
   return (
     <main className="category-container">
-      {/* 1. HEADER KATEGORI */}
+      {/* 1. BREADCRUMB */}
+      <nav className="breadcrumb">
+        <Link href="/" className="breadcrumb-link">Home</Link>
+        <span className="mx-2">/</span>
+        <span className="breadcrumb-current">{categoryTitle}</span>
+      </nav>
+
+      {/* 2. HEADER KATEGORI */}
       <div className="category-header">
         <h1 className="category-title">{categoryTitle}</h1>
       </div>
@@ -25,9 +48,10 @@ export default async function CategoryPage({
           <Link href="/" className="back-link">Kembali ke Beranda</Link>
         </div>
       ) : (
-        /* 2. DAFTAR BERITA */
+        /* 3. DAFTAR BERITA */
         <div className="news-list">
           {posts.map((post: any) => {
+            // PERBAIKAN: post.slug di sini sudah string murni dari query
             const postLink = `/${category}/${post.slug}`;
 
             return (
@@ -35,9 +59,10 @@ export default async function CategoryPage({
                 {/* Thumbnail Gambar */}
                 <div className="news-image-wrapper">
                   <Image 
-                    src={post.image || "https://via.placeholder.com/280x160?text=No+Image"} 
+                    src={post.image || "https://pcmkembaran.com/logo-md.png"} 
                     alt={post.title} 
                     fill
+                    sizes="(max-width: 768px) 100vw, 280px"
                     style={{ objectFit: 'cover' }}
                   />
                 </div>
@@ -57,6 +82,8 @@ export default async function CategoryPage({
                         day: 'numeric', month: 'long', year: 'numeric' 
                       })}
                     </span>
+                    <span className="meta-sep">•</span>
+                    <span className="meta-views">{post.views || 0} Dilihat</span>
                   </div>
                 </div>
               </Link>
@@ -65,104 +92,60 @@ export default async function CategoryPage({
         </div>
       )}
 
-      {/* 3. CSS RESPONSIVE (MEDIA QUERIES) */}
+      {/* 4. CSS STYLES */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .category-container {
-          max-width: 1100px;
-          margin: 0 auto;
-          padding: 40px 15px;
-          font-family: Arial, sans-serif;
-        }
-        .category-header {
-          border-bottom: 3px solid #004a8e;
-          margin-bottom: 40px;
-          padding-bottom: 10px;
-        }
-        .category-title {
-          font-size: 28px;
-          color: #004a8e;
-          fontWeight: 900;
-          margin: 0;
-        }
-        .news-list {
-          display: flex;
-          flex-direction: column;
-          gap: 35px;
-        }
-        .news-item-row {
-          display: flex;
-          gap: 25px;
-          text-decoration: none;
-          color: inherit;
-          padding-bottom: 30px;
-          border-bottom: 1px solid #f0f0f0;
-          transition: opacity 0.2s;
-        }
-        .news-item-row:hover { opacity: 0.8; }
+        :root { --abah-blue: #004a8e; --abah-gold: #ffc107; }
+        .category-container { max-width: 1100px; margin: 40px auto; padding: 0 15px; font-family: sans-serif; }
         
-        .news-image-wrapper {
-          width: 280px;
-          height: 160px;
-          flex-shrink: 0;
-          border-radius: 10px;
-          overflow: hidden;
-          position: relative;
-          background-color: #eee;
+        .breadcrumb { font-size: 13px; color: #888; margin-bottom: 20px; display: flex; align-items: center; }
+        .breadcrumb-link { text-decoration: none; color: #888; transition: 0.2s; }
+        .breadcrumb-link:hover { color: var(--abah-blue); }
+        .breadcrumb-current { color: #333; font-weight: bold; }
+
+        .category-header { border-bottom: 4px solid var(--abah-blue); margin-bottom: 45px; padding-bottom: 12px; }
+        .category-title { font-size: 32px; color: var(--abah-blue); font-weight: 900; margin: 0; }
+        
+        .news-list { display: flex; flex-direction: column; gap: 30px; }
+        .news-item-row { 
+          display: flex; gap: 30px; text-decoration: none; color: inherit; 
+          padding-bottom: 30px; border-bottom: 1px solid #f1f1f1; transition: 0.2s;
         }
-        .news-content {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
+        .news-item-row:hover { background-color: #fafafa; }
+        
+        .news-image-wrapper { 
+          width: 280px; height: 170px; flex-shrink: 0; border-radius: 12px; 
+          overflow: hidden; position: relative; background: #eee; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .news-title {
-          font-size: 22px;
-          font-weight: 800;
-          line-height: 1.3;
-          margin: 0 0 12px 0;
-          color: #1a1a1a;
+        
+        .news-content { display: flex; flex-direction: column; flex: 1; padding: 5px 0; }
+        .news-title { 
+          font-size: 22px; font-weight: 800; line-height: 1.3; 
+          margin: 0 0 12px 0; color: #111; transition: 0.2s; 
         }
-        .news-excerpt {
-          font-size: 15px;
-          color: #555;
-          margin: 0 0 15px 0;
-          line-height: 1.6;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+        .news-item-row:hover .news-title { color: var(--abah-blue); }
+        
+        .news-excerpt { 
+          font-size: 15px; color: #555; margin-bottom: 15px; line-height: 1.6;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
-        .news-meta {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-top: auto;
-        }
-        .meta-label {
-          font-size: 11px;
-          background-color: #eef4ff;
-          padding: 4px 10px;
-          border-radius: 4px;
-          color: #004a8e;
-          font-weight: bold;
+        
+        .news-meta { display: flex; align-items: center; gap: 12px; margin-top: auto; }
+        .meta-label { 
+          font-size: 10px; background-color: #eef4ff; padding: 4px 10px; 
+          border-radius: 4px; color: var(--abah-blue); font-weight: 900; 
         }
         .meta-date { font-size: 12px; color: #999; }
-        .empty-state { padding: 100px 0; text-align: center; color: #888; }
-        .back-link { color: #004a8e; font-weight: bold; margin-top: 15px; display: inline-block; }
+        .meta-sep { color: #ddd; }
+        .meta-views { font-size: 12px; color: var(--abah-blue); font-weight: bold; }
 
-        /* === RESPONSIVE BREAKPOINT (HP) === */
+        .empty-state { padding: 120px 0; text-align: center; color: #888; border: 2px dashed #eee; border-radius: 20px; }
+        .back-link { color: var(--abah-blue); font-weight: 800; text-decoration: none; margin-top: 15px; display: inline-block; border-bottom: 2px solid var(--abah-blue); }
+
         @media (max-width: 768px) {
-          .category-container { padding: 20px 15px; }
-          .news-item-row {
-            flex-direction: column; /* Gambar pindah ke atas teks */
-            gap: 15px;
-            padding-bottom: 25px;
-          }
-          .news-image-wrapper {
-            width: 100%; /* Gambar ambil lebar penuh */
-            height: 200px;
-          }
+          .news-item-row { flex-direction: column; gap: 15px; }
+          .news-image-wrapper { width: 100%; height: 210px; }
           .news-title { font-size: 18px; }
-          .news-excerpt { -webkit-line-clamp: 3; } /* Tampilkan lebih banyak teks di HP */
+          .news-excerpt { -webkit-line-clamp: 3; }
         }
       `}} />
     </main>
