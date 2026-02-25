@@ -1,4 +1,3 @@
-// lib/sanity.query.ts
 import { client } from "./sanity.client";
 import { groq } from "next-sanity";
 
@@ -21,7 +20,6 @@ export async function getAllPosts() {
 
 /**
  * 2. Ambil Berita Terbaru (Headline & Top News)
- * PERBAIKAN: Mengecek referensi kategori DAN teks kategori biasa (case-insensitive)
  */
 export async function getNewsPosts() {
   return client.fetch(
@@ -55,7 +53,7 @@ export async function getArticlePosts() {
 }
 
 /**
- * 4. Fungsi Dinamis Rubrik
+ * 4. Fungsi Dinamis Rubrik (Halaman Kategori)
  */
 export async function getPostsByCategory(categoryName: string) {
   return client.fetch(
@@ -95,31 +93,15 @@ export async function getSinglePost(slug: string) {
 }
 
 /**
- * 6. Ambil Naskah Khutbah Terbaru
- */
-export async function getKhutbahPosts() {
-  return client.fetch(
-    groq`*[_type == "post" && (categories[0]->title match "Khutbah" || category match "khutbah")] | order(publishedAt desc)[0...5] {
-      _id,
-      title,
-      "slug": slug.current,
-      "image": mainImage.asset->url,
-      "publishedAt": publishedAt,
-      "category": "Khutbah",
-      "views": coalesce(views, 0)
-    }`
-  );
-}
-
-/**
- * 7. Postingan Terkait
+ * 6. Postingan Terkait (BAWAH ARTIKEL)
+ * PERBAIKAN: Memastikan slug yang diambil adalah string murni
  */
 export async function getRelatedPosts(category: string, currentSlug: string) {
   return client.fetch(
-    groq`*[_type == "post" && (categories[0]->title match $category || category match $category) && slug.current != $currentSlug][0...3] {
+    groq`*[_type == "post" && (categories[0]->title match $category || category match $category) && slug.current != $currentSlug] | order(publishedAt desc) [0...3] {
       _id,
       title,
-      "slug": slug.current,
+      "slug": slug.current, 
       "image": mainImage.asset->url,
       "category": coalesce(categories[0]->title, category, $category)
     }`,
@@ -128,14 +110,28 @@ export async function getRelatedPosts(category: string, currentSlug: string) {
 }
 
 /**
+ * 7. Ambil Postingan Terpopuler (SIDEBAR)
+ * Berdasarkan jumlah views tertinggi
+ */
+export async function getPopularPosts() {
+  return client.fetch(
+    groq`*[_type == "post"] | order(views desc)[0...5] {
+      _id,
+      title,
+      "slug": slug.current,
+      "category": coalesce(categories[0]->title, category, "Berita")
+    }`
+  );
+}
+
+/**
  * 8. Fungsi Pencarian Global
  */
 export async function getSearchedPosts(searchQuery: string) {
   if (!searchQuery) return [];
-
   try {
     return await client.fetch(
-      groq`*[_type in ["post", "khutbah"] && (title match $searchQuery || pt::text(body) match $searchQuery)] | order(publishedAt desc) {
+      groq`*[_type == "post" && (title match $searchQuery || pt::text(body) match $searchQuery)] | order(publishedAt desc) {
         _id,
         title,
         "slug": slug.current,
