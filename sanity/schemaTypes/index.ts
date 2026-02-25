@@ -5,21 +5,23 @@ import gallery from './gallery'
 import ranting from './ranting'
 import masjid from './masjid'
 import profile from './profile'
-// 1. Impor skema pimpinan sebagai pengganti board
 import pimpinan from './pimpinan' 
 import installations from './installations' 
+// 1. Impor skema youtube yang baru kita buat
+import youtube from './youtube' // <-- TAMBAHKAN BARIS INI
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     post,          // Artikel/Berita
     profile,       // Profil PCM
-    pimpinan,      // Struktur Pengurus (Pengganti board)
+    pimpinan,      // Struktur Pengurus
     ranting,       // Data Ranting
     masjid,        // Data Masjid
     gallery,       // Galeri Foto
     download,      // File Download
+    installations, // Registrasi data aplikasi
     
-    // 2. Registrasi data aplikasi
-    installations, 
+    // 2. Registrasi objek youtube agar aktif di editor
+    youtube,       // <-- TAMBAHKAN DI SINI
   ],
 }

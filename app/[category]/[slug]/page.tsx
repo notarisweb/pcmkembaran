@@ -6,6 +6,8 @@ import { client } from "@/lib/sanity.client";
 import Link from "next/link";
 import ViewCounter from "@/components/ViewCounter"; 
 import ShareButtons from "@/components/ShareButtons";
+// 1. IMPORT KOMPONEN YOUTUBE PLAYER
+import YouTubePlayer from "@/components/YouTubePlayer";
 
 // 1. KONFIGURASI VIEWPORT (Standar Next.js 15)
 export const viewport = {
@@ -14,7 +16,7 @@ export const viewport = {
   initialScale: 1,
 };
 
-// 2. FUNGSI METADATA DINAMIS (Solusi Pratinjau Gambar & URL)
+// 2. FUNGSI METADATA DINAMIS
 export async function generateMetadata({ 
   params 
 }: { 
@@ -35,7 +37,7 @@ export async function generateMetadata({
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: url, // Memastikan URL artikel, bukan beranda
+      url: url,
       siteName: "PCM Kembaran",
       images: [{ url: post.image || imageFallback, width: 1200, height: 630 }],
       locale: "id_ID",
@@ -50,13 +52,13 @@ export async function generateMetadata({
   };
 }
 
-// 3. DEFINISI URL BUILDER (Hanya Sekali)
+// 3. DEFINISI URL BUILDER
 const builder = urlBuilder(client);
 function urlFor(source: any) {
   return builder.image(source);
 }
 
-// 4. KOMPONEN PORTABLE TEXT UNTUK RENDER KONTEN
+// 4. KOMPONEN PORTABLE TEXT (INTEGRASI YOUTUBE PLAYER)
 const ptComponents = {
   types: {
     image: ({ value }: any) => {
@@ -74,6 +76,8 @@ const ptComponents = {
         </div>
       );
     },
+    // INTEGRASI KOMPONEN YOUTUBE KUSTOM ANDA DI SINI
+    youtube: YouTubePlayer, 
   },
   block: {
     normal: ({ children }: any) => (
@@ -102,10 +106,8 @@ export default async function PostDetail({
 
   return (
     <main className="post-detail-main">
-      {/* TRIGGER UPDATE JUMLAH PEMBACA */}
       <ViewCounter slug={slug} />
       
-      {/* 1. BREADCRUMB */}
       <nav className="breadcrumb">
         <Link href="/" className="breadcrumb-link">Home</Link>
         <span>/</span>
@@ -115,12 +117,9 @@ export default async function PostDetail({
       </nav>
 
       <div className="main-grid-layout">
-        
-        {/* ================= SISI KIRI: KONTEN UTAMA ================= */}
         <article>
           <header className="article-header">
             <h1 className="main-title">{post.title}</h1>
-            
             <div className="meta-bar">
               <div className="author-info">
                 <div className="author-avatar">
@@ -128,7 +127,6 @@ export default async function PostDetail({
                 </div>
                 <div className="author-text">
                   <span className="author-name">Redaksi PCM Kembaran</span>
-                  
                   <div className="post-meta-details">
                     <span className="post-date">
                       {new Date(post.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -144,8 +142,6 @@ export default async function PostDetail({
                   </div>
                 </div>
               </div>
-
-              {/* 2. TOMBOL SHARE MEDSOS (CLIENT COMPONENT) */}
               <ShareButtons shareUrl={shareUrl} postTitle={post.title} />
             </div>
           </header>
@@ -158,7 +154,6 @@ export default async function PostDetail({
             {post.body && <PortableText value={post.body} components={ptComponents} />}
           </div>
 
-          {/* 3. RELATED POSTS */}
           {relatedPosts && relatedPosts.length > 0 && (
             <section className="related-section">
               <h3 className="related-heading">Postingan Terkait</h3>
@@ -176,7 +171,6 @@ export default async function PostDetail({
           )}
         </article>
 
-        {/* ================= SISI KANAN: SIDEBAR ================= */}
         <aside className="sidebar">
           <div className="sidebar-card">
             <h3 className="sidebar-heading gold-border">IKUTI KAMI</h3>
@@ -202,7 +196,6 @@ export default async function PostDetail({
         </aside>
       </div>
 
-      {/* 5. CSS STYLES */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root { --abah-blue: #004a8e; --abah-gold: #ffc107; }
         .post-detail-main { max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: sans-serif; }
@@ -216,40 +209,13 @@ export default async function PostDetail({
         .meta-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
         .author-info { display: flex; align-items: center; gap: 12px; }
         .author-avatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 1px solid #eee; }
-        .author-text { display: flex; flex-direction: column; } /* FIXED */
+        .author-text { display: flex; flex-direction: column; }
         .author-name { font-weight: bold; color: #333; font-size: 15px; }
 
         .post-meta-details { display: flex; align-items: center; gap: 8px; color: #888; font-size: 12px; margin-top: 4px; }
         .view-count { display: flex; align-items: center; gap: 6px; }
         .view-count svg { color: var(--abah-blue); }
         .meta-separator { color: #ccc; }
-
-        /* SHARE BUTTONS STYLE */
-        .share-buttons-container { display: flex; align-items: center; gap: 12px; }
-        .share-label-box { 
-          display: flex; align-items: center; gap: 8px; border: 1px solid #e0e0e0; padding: 8px 15px; border-radius: 4px; 
-          font-size: 14px; font-weight: 700; color: #444; background-color: #fff; position: relative;
-        }
-        .share-label-box::after {
-          content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
-          border-width: 6px 0 6px 6px; border-style: solid; border-color: transparent transparent transparent #fff; z-index: 1;
-        }
-        .share-label-box::before {
-          content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%);
-          border-width: 7px 0 7px 7px; border-style: solid; border-color: transparent transparent transparent #e0e0e0;
-        }
-        .share-icons-wrapper { display: flex; align-items: center; gap: 8px; }
-        .share-icon-box { 
-          width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; 
-          text-decoration: none; border: none; transition: transform 0.2s;
-        }
-        
-        .bg-fb { background-color: #3b5998; } 
-        .bg-x { background-color: #000000; } 
-        .bg-ig { background-color: #E4405F !important; } /* WARNA IG AGAR TIDAK BOLONG */
-        .bg-wa { background-color: #25D366; } 
-        .bg-tg { background-color: #2ca5e0; } 
-        .bg-link { background-color: #444; }
 
         .featured-image { width: 100%; border-radius: 12px; margin-bottom: 40px; }
         .article-p { margin-bottom: 1.8rem; line-height: 1.8; font-size: 18px; color: #333; }
@@ -259,11 +225,7 @@ export default async function PostDetail({
         .image-caption { font-size: 14px; color: #666; margin-top: 10px; font-style: italic; }
 
         .related-section { margin-top: 60px; border-top: 4px solid var(--abah-blue); padding-top: 30px; }
-		.related-heading {
-  font-size: 34px;   /* ubah 36px kalau mau lebih besar */
-  font-weight: 800;
-  margin-bottom: 20px;
-}
+        .related-heading { font-size: 34px; font-weight: 800; margin-bottom: 20px; }
 
         .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .related-card { text-decoration: none; color: inherit; }
@@ -295,7 +257,6 @@ export default async function PostDetail({
         @media (max-width: 768px) { .related-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) {
           .related-grid { grid-template-columns: 1fr; }
-          .share-text { display: none; }
           .main-title { font-size: 26px; }
           .post-meta-details { flex-wrap: wrap; }
         }

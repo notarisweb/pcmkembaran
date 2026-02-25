@@ -1,15 +1,19 @@
-export default {
+import { defineType, defineField } from 'sanity'
+import { DocumentIcon } from '@sanity/icons'
+
+export default defineType({
   name: 'post',
   title: 'Konten Utama',
   type: 'document',
+  icon: DocumentIcon,
   fields: [
-    {
+    defineField({
       name: 'title',
       title: 'Judul Konten',
       type: 'string',
       validation: (Rule) => Rule.required(),
-    },
-    {
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug (URL)',
       type: 'slug',
@@ -18,8 +22,8 @@ export default {
         maxLength: 96,
       },
       validation: (Rule) => Rule.required(),
-    },
-    {
+    }),
+    defineField({
       name: 'category',
       title: 'Kategori Konten',
       type: 'string',
@@ -39,15 +43,13 @@ export default {
           { title: 'Hadits Pilihan', value: 'hadits' },
           { title: 'Fiqih Praktis', value: 'fiqih' },
         ],
-        layout: 'dropdown', 
+        layout: 'dropdown',
       },
       validation: (Rule) => Rule.required(),
-    },
-    
-    /* ============================================================
-       KOLOM KHUSUS UNDUHAN (Muncul Hanya Jika Kategori 'Unduhan')
-       ============================================================ */
-    {
+    }),
+
+    /* --- KOLOM KHUSUS UNDUHAN (Muncul Otomatis jika Kategori 'unduhan' dipilih) --- */
+    defineField({
       name: 'fileSource',
       title: 'Upload File Langsung',
       type: 'file',
@@ -55,60 +57,60 @@ export default {
       options: {
         accept: '.pdf,.doc,.docx,.zip'
       },
-      // Munculkan HANYA jika kategori == 'unduhan'
       hidden: ({ document }) => document?.category !== 'unduhan',
-    },
-    {
+    }),
+    defineField({
       name: 'downloadLink',
       title: 'Link Unduhan (Luar)',
       type: 'url',
       description: 'Masukkan link Google Drive/Dropbox jika file sudah ada di sana.',
       hidden: ({ document }) => document?.category !== 'unduhan',
-    },
-    {
+    }),
+    defineField({
       name: 'fileSize',
       title: 'Keterangan File',
       type: 'string',
       description: 'Contoh: PDF, 2.5 MB, atau Versi 1.0',
       hidden: ({ document }) => document?.category !== 'unduhan',
-    },
-    /* ============================================================ */
+    }),
 
-    {
+    /* --- KOLOM MEDIA & META --- */
+    defineField({
       name: 'mainImage',
       title: 'Gambar Utama',
       type: 'image',
       options: {
-        hotspot: true, 
+        hotspot: true,
       },
-      // Tetap muncul untuk semua kategori agar tampilan kartu tetap cantik
-    },
-    {
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Tanggal Terbit',
       type: 'datetime',
       initialValue: () => (new Date()).toISOString(),
-    },
-    {
+    }),
+    defineField({
       name: 'views',
       title: 'Jumlah Pembaca (Views)',
       type: 'number',
       description: 'Admin bisa mengisi atau mengubah angka ini agar tampilan views terlihat keren di website.',
       initialValue: 0,
-    },
-    {
+    }),
+
+    /* --- EDITOR KONTEN (Portable Text) --- */
+    defineField({
       name: 'body',
       title: 'Isi Konten / Deskripsi',
       type: 'array',
       of: [
-        { 
-          type: 'block' 
-        },
+        { type: 'block' },
         {
           type: 'image',
           options: { hotspot: true },
-        }
-      ], 
-    },
+        },
+        // OBJEK YOUTUBE AKTIF DI SINI
+        { type: 'youtube' } 
+      ],
+    }),
   ],
-}
+})
