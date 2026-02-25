@@ -6,30 +6,21 @@ import urlBuilder from "@sanity/image-url";
 import { client } from "@/lib/sanity.client";
 
 const builder = urlBuilder(client);
-function urlFor(source: any) {
-  return builder.image(source);
-}
+const urlFor = (source: any) => builder.image(source);
 
 const ptComponents = {
   types: {
-    image: ({ value }: any) => {
-      if (!value?.asset?._ref) return null;
-      return (
-        <div className="content-image-container">
-          <img
-            src={urlFor(value).fit('max').auto('format').url()}
-            alt={value.alt || "Gambar Konten"}
-            className="content-image"
-          />
-          {value.caption && <p className="image-caption">{value.caption}</p>}
-        </div>
-      );
-    },
-    youtube: YouTubePlayer, 
+    image: ({ value }: any) => (
+      <div style={{ margin: '2.5rem 0', textAlign: 'center' }}>
+        <img src={urlFor(value).url()} alt="Gambar Artikel" style={{ borderRadius: '12px', maxWidth: '100%', height: 'auto' }} />
+        {value.caption && <p style={{ fontSize: '14px', color: '#666', marginTop: '10px', fontStyle: 'italic' }}>{value.caption}</p>}
+      </div>
+    ),
+    youtube: YouTubePlayer,
   },
   block: {
-    normal: ({ children }: any) => <p className="article-p">{children}</p>,
-    h2: ({ children }: any) => <h2 className="article-h2">{children}</h2>,
+    normal: ({ children }: any) => <p style={{ marginBottom: '1.5rem', lineHeight: '1.8', fontSize: '18px', color: '#333' }}>{children}</p>,
+    h2: ({ children }: any) => <h2 style={{ marginTop: '2rem', marginBottom: '1rem', color: '#004a8e', fontSize: '24px', fontWeight: 'bold' }}>{children}</h2>,
   },
 };
 
