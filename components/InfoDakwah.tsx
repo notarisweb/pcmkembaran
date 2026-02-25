@@ -1,3 +1,5 @@
+"use client"; // WAJIB: Agar styled-jsx bisa jalan di Next.js App Router
+
 export default function InfoDakwah() {
   return (
     <div className="sidebar-card info-dakwah-card">
