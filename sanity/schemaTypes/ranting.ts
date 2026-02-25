@@ -1,11 +1,11 @@
 import { defineField, defineType } from 'sanity'
-import { PinIcon } from '@sanity/icons' // Ganti MapIcon menjadi PinIcon atau MarkerIcon
+import { PinIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'ranting',
   title: 'Data Ranting (PRM)',
   type: 'document',
-  icon: PinIcon, // Gunakan PinIcon di sini
+  icon: PinIcon,
   fields: [
     defineField({
       name: 'name',
@@ -13,6 +13,14 @@ export default defineType({
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'establishedYear',
+      title: 'Tahun Berdiri',
+      type: 'string',
+      description: 'Tahun peresmian atau berdirinya ranting (Contoh: 1975)',
+    }),
+    
+    // --- STRUKTUR PIMPINAN ---
     defineField({
       name: 'leader',
       title: 'Ketua Ranting',
@@ -24,6 +32,28 @@ export default defineType({
       type: 'string',
       description: 'Nomor Baku Muhammadiyah Ketua Ranting',
     }),
+    defineField({
+      name: 'secretary',
+      title: 'Sekretaris Ranting',
+      type: 'string',
+    }),
+    defineField({
+      name: 'nbmSecretary',
+      title: 'NBM Sekretaris',
+      type: 'string',
+    }),
+    defineField({
+      name: 'treasurer',
+      title: 'Bendahara Ranting',
+      type: 'string',
+    }),
+    defineField({
+      name: 'nbmTreasurer',
+      title: 'NBM Bendahara',
+      type: 'string',
+    }),
+
+    // --- LOKASI & KONTAK ---
     defineField({
       name: 'latitude',
       title: 'Latitude',
@@ -50,11 +80,22 @@ export default defineType({
     }),
     defineField({
       name: 'order',
-      title: 'Urutan',
+      title: 'Urutan Tampilan',
       type: 'number',
     }),
   ],
   preview: {
-    select: { title: 'name', subtitle: 'leader', media: 'image' },
+    select: { 
+      title: 'name', 
+      subtitle: 'leader', 
+      media: 'image' 
+    },
+    prepare({ title, subtitle, media }) {
+      return {
+        title: title,
+        subtitle: subtitle ? `Ketua: ${subtitle}` : 'Ketua belum diisi',
+        media: media,
+      }
+    },
   },
 })
