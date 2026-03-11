@@ -1,15 +1,15 @@
 import { getAllPosts } from "@/lib/sanity.query"; 
 import Link from "next/link";
+// 1. IMPOR KOMPONEN IMAGE UNTUK OPTIMASI
+import Image from "next/image";
 
 export default async function LatestPosts() {
-  // 1. Mengambil data dari Sanity (Project ID: deyoeizv)
   const posts = await getAllPosts();
 
   return (
     <section style={{ paddingBottom: '50px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
         
-        {/* LIST POSTINGAN: Tanpa Header h2 agar tidak dobel */}
         {posts.map((post: any) => {
           // Logika rute dinamis: /[category]/[slug]
           const categoryPath = post.category?.toLowerCase().replace(/\s+/g, '-') || "artikel";
@@ -18,64 +18,48 @@ export default async function LatestPosts() {
             <Link 
               href={`/${categoryPath}/${post.slug}`} 
               key={post._id} 
-              style={{ display: 'flex', gap: '20px', textDecoration: 'none', alignItems: 'flex-start' }}
-              className="post-card-item"
+              className="post-card-item-horizontal"
             >
-              {/* THUMBNAIL */}
-              <div style={{ 
-                width: '200px', 
-                height: '125px', 
-                borderRadius: '10px', 
-                overflow: 'hidden', 
-                flexShrink: 0,
-                backgroundColor: '#f8f9fa',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-              }}>
-                <img 
+              {/* 2. THUMBNAIL OPTIMIZED */}
+              <div className="thumb-wrapper">
+                <Image 
                   src={post.image || "/logo-md.png"} 
                   alt={post.title} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  fill
+                  // Mengunduh gambar sesuai ukuran elemen (200px)
+                  sizes="(max-width: 768px) 100vw, 200px"
+                  style={{ objectFit: 'cover' }} 
                 />
               </div>
 
-              {/* KONTEN TEKS */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ 
-                  fontSize: '11px', 
-                  color: post.category?.toLowerCase() === 'berita' ? '#e64d31' : 'var(--abah-blue)', 
-                  fontWeight: '800', 
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+              {/* 3. KONTEN TEKS PREMIUM */}
+              <div className="post-text-content">
+                <span className="post-cat-label" style={{ 
+                  color: post.category?.toLowerCase() === 'berita' ? '#e64d31' : '#004a8e' 
                 }}>
                   {post.category}
                 </span>
                 
-                <h3 style={{ 
-                  fontSize: '18px', 
-                  fontWeight: '800', 
-                  color: '#1a1a1a', 
-                  margin: 0, 
-                  lineHeight: '1.4'
-                }}>
+                <h3 className="post-item-title">
                   {post.title}
                 </h3>
                 
-                {/* METADATA: TANGGAL & VIEWS (Editable Admin) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#999' }}>
-                  <span>
+                {/* METADATA */}
+                <div className="post-meta-row">
+                  <span suppressHydrationWarning>
                     {new Date(post.publishedAt).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric'
                     })}
                   </span>
-                  <span>•</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="meta-dot">•</span>
+                  <div className="post-views-box">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                       <circle cx="12" cy="12" r="3"></circle>
                     </svg>
-                    <span style={{ color: 'var(--abah-gold)', fontWeight: '700' }}>
+                    <span className="gold-views">
                       {post.views || 0} Kali Dibaca
                     </span>
                   </div>
@@ -85,33 +69,56 @@ export default async function LatestPosts() {
           );
         })}
 
-        {/* Fallback jika kosong */}
         {posts.length === 0 && (
-           <p style={{ color: '#888', textAlign: 'center', padding: '40px' }}>
-             Belum ada postingan terbaru dari PCM Kembaran.
-           </p>
+           <p className="empty-msg">Belum ada postingan terbaru dari PCM Kembaran.</p>
         )}
       </div>
 
-      {/* TOMBOL INDEKS */}
+      {/* 4. TOMBOL INDEKS */}
       <div style={{ marginTop: '40px' }}>
-        <Link href="/berita" style={{ 
-          display: 'inline-flex', 
-          alignItems: 'center', 
-          gap: '10px', 
-          backgroundColor: 'var(--abah-blue)', 
-          color: '#fff', 
-          padding: '12px 25px', 
-          borderRadius: '8px', 
-          textDecoration: 'none', 
-          fontWeight: '900', 
-          fontSize: '13px',
-          textTransform: 'uppercase',
-          boxShadow: '0 4px 12px rgba(0,74,142,0.2)'
-        }}>
-          Indeks Berita PCM <span style={{ fontSize: '18px' }}>➔</span>
+        <Link href="/berita" className="btn-indeks">
+          Indeks Berita PCM <span>➔</span>
         </Link>
       </div>
+
+      {/* CSS INTERNAL UNTUK KERAPIHAN RESPONSIVE */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .post-card-item-horizontal { 
+          display: flex; gap: 20px; text-decoration: none; align-items: flex-start; 
+          transition: 0.3s;
+        }
+        .post-card-item-horizontal:hover { opacity: 0.7; }
+        
+        .thumb-wrapper { 
+          width: 200px; height: 125px; border-radius: 12px; overflow: hidden; 
+          flex-shrink: 0; background: #f8f9fa; position: relative;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .post-text-content { display: flex; flex-direction: column; gap: 6px; }
+        .post-cat-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .post-item-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; line-height: 1.4; }
+        
+        .post-meta-row { display: flex; align-items: center; gap: 12px; font-size: 12px; color: #999; font-weight: 600; }
+        .meta-dot { color: #ddd; }
+        .post-views-box { display: flex; align-items: center; gap: 4px; }
+        .gold-views { color: #ffc107; font-weight: 800; }
+
+        .btn-indeks { 
+          display: inline-flex; alignItems: center; gap: 10px; background: #004a8e; 
+          color: #fff; padding: 12px 28px; border-radius: 10px; text-decoration: none; 
+          font-weight: 900; font-size: 13px; text-transform: uppercase;
+          box-shadow: 0 8px 15px rgba(0,74,142,0.2); transition: 0.3s;
+        }
+        .btn-indeks:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,74,142,0.3); }
+
+        .empty-msg { color: #888; text-align: center; padding: 40px; border: 1px dashed #ddd; border-radius: 15px; }
+
+        @media (max-width: 640px) {
+          .post-card-item-horizontal { flex-direction: column; gap: 15px; }
+          .thumb-wrapper { width: 100%; height: 180px; }
+        }
+      `}} />
     </section>
   );
 }

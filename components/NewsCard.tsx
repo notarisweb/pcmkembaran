@@ -1,5 +1,6 @@
-// components/NewsCard.tsx
 import Link from "next/link";
+// 1. IMPOR KOMPONEN IMAGE UNTUK OPTIMASI OTOMATIS
+import Image from "next/image";
 
 type NewsCardProps = {
   title?: string;
@@ -19,14 +20,8 @@ export default function NewsCard({
   views = 0,
 }: NewsCardProps) {
   
-  /** * LOGIKA NAVIGASI DINAMIS: 
-   * Memastikan slug kategori bersih untuk URL (contoh: "Info Dakwah" -> "info-dakwah")
-   */
   const path = category.toLowerCase().replace(/\s+/g, "-");
 
-  /** * FORMAT TANGGAL:
-   * Menggunakan "id-ID" agar sesuai dengan bahasa Indonesia.
-   */
   const formattedDate = date 
     ? new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -39,7 +34,7 @@ export default function NewsCard({
     <article className="news-card-item" style={{ marginBottom: '25px' }}>
       <Link href={`/${path}/${slug}`} style={{ textDecoration: 'none', display: 'block' }}>
         
-        {/* 1. THUMBNAIL DENGAN BADGE KATEGORI */}
+        {/* 1. THUMBNAIL DENGAN OPTIMASI NEXT/IMAGE */}
         <div style={{ 
           width: '100%', 
           aspectRatio: '16/9', 
@@ -47,17 +42,18 @@ export default function NewsCard({
           overflow: 'hidden', 
           marginBottom: '14px',
           backgroundColor: '#f8f9fa',
-          position: 'relative',
+          position: 'relative', // Wajib untuk Image dengan fill
           boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
         }}>
-          <img 
+          <Image 
             src={image} 
             alt={title} 
-            loading="lazy" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+            fill // Mengisi container secara otomatis
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Aturan download gambar
+            style={{ objectFit: 'cover', transition: 'transform 0.3s ease' }}
+            className="hover-zoom"
           />
           
-          {/* Badge Kategori PCM Kembaran */}
           <div style={{
             position: 'absolute',
             top: '12px',
@@ -70,13 +66,13 @@ export default function NewsCard({
             borderRadius: '6px',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            zIndex: 1 // Pastikan badge di atas gambar
           }}>
             {category}
           </div>
         </div>
 
-        {/* 2. KONTEN TEKS */}
         <div className="news-card-content">
           <h3 style={{ 
             fontSize: '17px', 
@@ -88,12 +84,11 @@ export default function NewsCard({
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            height: '46px' // Menjaga kerapihan grid
+            height: '46px'
           }}>
             {title}
           </h3>
           
-          {/* 3. METADATA: TANGGAL & VIEWS */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -102,10 +97,8 @@ export default function NewsCard({
             color: '#888',
             fontWeight: '600'
           }}>
-            {/* PENTING: suppressHydrationWarning untuk mencegah error di browser */}
             <span suppressHydrationWarning>{formattedDate}</span>
             
-            {/* Tampilan Views dengan Ikon Mata yang dipertebal */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

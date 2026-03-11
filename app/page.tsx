@@ -1,71 +1,60 @@
 import { client } from "@/lib/sanity.client"; 
 import { getAllPosts, getKhutbahPosts } from "@/lib/sanity.query";
-import Headline from "@/components/Headline";
-import TopNews from "@/components/TopNews";
-import PopularSidebar from "@/components/PopularSidebar";
-import RecommendationSection from "@/components/RecommendationSection";
-import LatestPosts from "@/components/LatestPosts";
-import KhutbahSidebar from "@/components/KhutbahSidebar";
-import InfoDakwah from "@/components/InfoDakwah";
-import LatestArticlesSidebar from "@/components/LatestArticlesSidebar";
-import NotificationButton from "@/components/NotificationButton";
-import BentoDashboard from "@/components/BentoDashboard"; 
+import dynamic from "next/dynamic"; // Impor fitur Dynamic Import
 
-// Memastikan data selalu segar dari Project ID: deyoeizv
+// 1. DYNAMIC IMPORTS: Memecah bundle JavaScript menjadi bagian kecil
+const Headline = dynamic(() => import("@/components/Headline"), { ssr: true });
+const TopNews = dynamic(() => import("@/components/TopNews"), { ssr: false });
+const PopularSidebar = dynamic(() => import("@/components/PopularSidebar"), { ssr: true });
+const RecommendationSection = dynamic(() => import("@/components/RecommendationSection"), { ssr: false });
+const LatestPosts = dynamic(() => import("@/components/LatestPosts"), { ssr: true });
+const KhutbahSidebar = dynamic(() => import("@/components/KhutbahSidebar"), { ssr: true });
+const InfoDakwah = dynamic(() => import("@/components/InfoDakwah"), { ssr: false });
+const LatestArticlesSidebar = dynamic(() => import("@/components/LatestArticlesSidebar"), { ssr: true });
+const NotificationButton = dynamic(() => import("@/components/NotificationButton"), { ssr: false });
+const BentoDashboard = dynamic(() => import("@/components/BentoDashboard"), { ssr: true }); 
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
 
 export default async function Home() {
-  // 1. Multi-Query untuk Bento Grid (Ditambahkan field nbm untuk identitas pimpinan)
+  // 1. Multi-Query untuk Bento Grid
   const bentoQuery = `{
     "latestPost": *[_type == "post"] | order(publishedAt desc)[0] {
-      title,
-      category,
-      publishedAt,
-      slug,
+      title, category, publishedAt, slug,
       "fileUrl": fileSource.asset->url,
-      downloadLink,
-      fileSize
+      downloadLink, fileSize
     },
     "installCount": count(*[_type == "installations"]),
     "leader": *[_type == "pimpinan" && category == "harian"] | order(order asc)[0] {
-      name,
-      nbm, // <--- Field NBM sekarang ditarik dari Sanity
-      position,
-      "photoUrl": photo.asset->url
+      name, nbm, position, "photoUrl": photo.asset->url
     },
     "profile": *[_type == "profile"][0],
     "rantingCount": count(*[_type == "ranting"]),
     "masjidCount": count(*[_type == "masjid"])
   }`;
 
-  // 2. Fetching data secara paralel
-  const allPosts = await getAllPosts() || [];
-  const khutbahData = await getKhutbahPosts() || [];
-  const bentoData = await client.fetch(bentoQuery); 
+  // 2. Fetching data secara paralel (Tetap cepat karena di sisi Server)
+  const [allPosts, khutbahData, bentoData] = await Promise.all([
+    getAllPosts(),
+    getKhutbahPosts(),
+    client.fetch(bentoQuery)
+  ]);
 
   return (
     <div className="page-wrapper" style={{ 
-      margin: '0 auto', 
-      maxWidth: '1200px', 
-      padding: '0 20px', 
-      minHeight: '100vh', 
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'relative' 
+      margin: '0 auto', maxWidth: '1200px', padding: '0 20px', 
+      minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' 
     }}>
       
-      {/* 1. TOP NEWS - Informasi baris tunggal paling atas */}
+      {/* 1. TOP NEWS */}
       <div className="hide-on-mobile">
         <TopNews />
       </div>
 
-      {/* 2. GRID UTAMA - Headline Utama & Sidebar Populer */}
+      {/* 2. GRID UTAMA */}
       <div className="main-grid" style={{ 
-        display: 'grid', 
-        gridTemplateColumns: '1fr 340px', 
-        gap: '40px', 
-        marginTop: '25px' 
+        display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', marginTop: '25px' 
       }}>
         <div className="content-headline" style={{ minHeight: '300px' }}>
           <Headline />
@@ -75,7 +64,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* === 3. BENTO DASHBOARD - Mecerahkan di bawah Headline === */}
+      {/* 3. BENTO DASHBOARD */}
       <section style={{ marginTop: '45px' }}>
         <BentoDashboard data={bentoData} />
       </section>
@@ -84,9 +73,9 @@ export default async function Home() {
       <section className="hide-on-mobile" style={{ marginTop: '50px', paddingTop: '20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
           <div>
-            <RecommendationSection allData={allPosts} />
+            <RecommendationSection allData={allPosts || []} />
           </div>
-          <aside style={{ paddingLeft: '0' }}>
+          <aside>
             <LatestArticlesSidebar />
           </aside>
         </div>
@@ -94,12 +83,8 @@ export default async function Home() {
 
       {/* 5. POSTINGAN TERBARU & SIDEBAR DAKWAH */}
       <div className="bottom-layout-grid" style={{ 
-        display: 'grid', 
-        gridTemplateColumns: '1fr 340px', 
-        gap: '40px', 
-        marginTop: '50px',
-        paddingBottom: '60px',
-        flex: 1 
+        display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', 
+        marginTop: '50px', paddingBottom: '60px', flex: 1 
       }}>
         <div className="content-latest">
           <h2 style={{ fontSize: '22px', color: '#004a8e', fontWeight: '900', marginBottom: '25px', textTransform: 'uppercase' }}>
@@ -109,19 +94,15 @@ export default async function Home() {
         </div>
 
         <div className="sidebar-dakwah" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-          <KhutbahSidebar articles={khutbahData} />
+          <KhutbahSidebar articles={khutbahData || []} />
           <InfoDakwah />
         </div>
       </div>
 
       {/* TOMBOL MELAYANG (FAB) */}
       <div className="floating-notif-container" style={{
-        position: 'fixed',
-        bottom: '30px',
-        right: '30px',
-        zIndex: 2000,
-        filter: 'drop-shadow(0 8px 20px rgba(0,74,142,0.4))',
-        transition: 'all 0.3s ease'
+        position: 'fixed', bottom: '30px', right: '30px', zIndex: 2000,
+        filter: 'drop-shadow(0 8px 20px rgba(0,74,142,0.4))'
       }}>
         <NotificationButton />
       </div>

@@ -1,4 +1,4 @@
-"use client"; // WAJIB: Agar styled-jsx bisa jalan di Next.js App Router
+"use client"; 
 
 export default function InfoDakwah() {
   return (
@@ -10,7 +10,6 @@ export default function InfoDakwah() {
           Dukung operasional dakwah digital <strong>PCM Kembaran</strong> dengan menjadi donatur atau mitra kerjasama.
         </p>
         
-        {/* TOMBOL DONASI SOCIABUZZ */}
         <a 
           href="https://sociabuzz.com/pcmkembaran/tribe" 
           target="_blank" 
@@ -33,6 +32,8 @@ export default function InfoDakwah() {
           margin-bottom: 30px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.03);
           transition: all 0.3s ease;
+          /* Menggunakan font sistem/global agar tidak membebani render */
+          font-family: inherit; 
         }
         .info-dakwah-card:hover {
           transform: translateY(-5px);
@@ -41,7 +42,7 @@ export default function InfoDakwah() {
         .centered-title {
           text-align: center;
           font-size: 16px;
-          font-weight: 900;
+          font-weight: 800;
           color: #004a8e;
           margin-bottom: 15px;
           letter-spacing: 1px;
@@ -61,9 +62,8 @@ export default function InfoDakwah() {
         }
         .info-body strong {
           color: #004a8e;
+          font-weight: 800;
         }
-
-        /* STYLING TOMBOL PREMIUM */
         .btn-donasi {
           display: flex;
           align-items: center;
@@ -85,12 +85,6 @@ export default function InfoDakwah() {
           color: #004a8e;
           transform: scale(1.03);
           box-shadow: 0 6px 15px rgba(255, 193, 7, 0.3);
-        }
-        .btn-donasi svg {
-          transition: transform 0.3s ease;
-        }
-        .btn-donasi:hover svg {
-          transform: scale(1.2);
         }
       `}</style>
     </div>
