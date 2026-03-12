@@ -1,7 +1,9 @@
-"use client"; // Wajib untuk logika pengacakan di browser
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+// 1. IMPOR IMAGE UNTUK OPTIMASI PERFORMA
+import Image from "next/image";
 
 interface Post {
   _id: string;
@@ -15,9 +17,9 @@ interface Post {
 export default function RecommendationSection({ allData }: { allData: Post[] }) {
   const [recommended, setRecommended] = useState<Post[]>([]);
 
-  // Logika pengacakan hanya dijalankan di browser (Client-side)
   useEffect(() => {
     if (allData && allData.length > 0) {
+      // Mengambil 6 postingan secara acak di sisi Client
       const shuffled = [...allData]
         .sort(() => Math.random() - 0.5)
         .slice(0, 6);
@@ -25,80 +27,104 @@ export default function RecommendationSection({ allData }: { allData: Post[] }) 
     }
   }, [allData]);
 
-  // Mencegah tampilan berantakan saat data belum siap di client
   if (recommended.length === 0) return null;
 
   return (
-    <div>
+    <div className="recommendation-container">
       {/* HEADER REKOMENDASI */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h2 style={{ fontSize: '22px', color: 'var(--abah-blue)', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Rekomendasi <span style={{ color: 'var(--abah-gold)' }}>Untuk Anda</span>
+        <h2 style={{ fontSize: '22px', color: '#004a8e', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Rekomendasi <span style={{ color: '#ffc107' }}>Untuk Anda</span>
         </h2>
-        <Link href="/berita" style={{ fontSize: '13px', color: '#888', textDecoration: 'none', fontWeight: '600' }}>
+        <Link href="/berita" style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'none', fontWeight: '800' }}>
           LIHAT SEMUA ❯
         </Link>
       </div>
 
       {/* GRID 3 KOLOM */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px' }}>
-        {recommended.map((item) => (
-          <Link 
-            href={`/${item.category}/${item.slug}`} 
-            key={item._id} 
-            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-          >
-            <div style={{ 
-              width: '100%', 
-              height: '150px', 
-              borderRadius: '10px', 
-              overflow: 'hidden', 
-              marginBottom: '12px',
-              backgroundColor: '#f9f9f9',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-            }}>
-              <img 
-                src={item.image || "/logo-md.png"} 
-                alt={item.title} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-              />
-            </div>
+      <div className="recommend-grid">
+        {recommended.map((item) => {
+          // Logika pembersihan URL Kategori
+          const categoryPath = item.category?.toLowerCase().replace(/\s+/g, '-') || "artikel";
+          
+          return (
+            <Link 
+              href={`/${categoryPath}/${item.slug}`} 
+              key={item._id} 
+              className="recommend-card"
+            >
+              {/* THUMBNAIL OPTIMIZED */}
+              <div className="recommend-thumb-wrapper">
+                <Image 
+                  src={item.image || "/logo-md.png"} 
+                  alt={item.title} 
+                  fill
+                  // Hanya download gambar selebar 33% layar pada desktop
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  style={{ objectFit: 'cover' }}
+                  className="recommend-img"
+                />
+              </div>
 
-            <span style={{ 
-              fontSize: '11px', 
-              color: item.category === 'berita' ? '#e64d31' : 'var(--abah-gold)', 
-              fontWeight: '800', 
-              display: 'block', 
-              marginBottom: '6px',
-              textTransform: 'uppercase'
-            }}>
-              {item.category}
-            </span>
+              <span className="recommend-cat" style={{ 
+                color: item.category?.toLowerCase() === 'berita' ? '#e64d31' : '#ffc107' 
+              }}>
+                {item.category}
+              </span>
 
-            <h3 style={{ 
-              fontSize: '15px', 
-              fontWeight: '700', 
-              lineHeight: '1.4', 
-              margin: '0 0 8px 0', 
-              color: '#1a1a1a',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
-            }}>
-              {item.title}
-            </h3>
+              <h3 className="recommend-title">
+                {item.title}
+              </h3>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#aaa' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span style={{ fontWeight: '600' }}>{item.views || 0} Kali Dibaca</span>
-            </div>
-          </Link>
-        ))}
+              <div className="recommend-meta">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span suppressHydrationWarning>{item.views || 0} Kali Dibaca</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .recommend-grid { 
+          display: grid; 
+          grid-template-columns: repeat(3, 1fr); 
+          gap: 25px; 
+        }
+        .recommend-card { text-decoration: none; color: inherit; transition: 0.3s; }
+        .recommend-card:hover { opacity: 0.8; }
+        
+        .recommend-thumb-wrapper { 
+          width: 100%; height: 160px; border-radius: 12px; overflow: hidden; 
+          margin-bottom: 12px; background: #f1f5f9; position: relative;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .recommend-img { transition: transform 0.5s ease; }
+        .recommend-card:hover .recommend-img { transform: scale(1.1); }
+
+        .recommend-cat { 
+          font-size: 10px; font-weight: 800; display: block; 
+          margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .recommend-title { 
+          font-size: 15px; font-weight: 800; lineHeight: 1.5; 
+          margin: 0 0 10px 0; color: #1e293b;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+          height: 44px;
+        }
+        .recommend-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; font-weight: 600; }
+
+        @media (max-width: 992px) {
+          .recommend-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+          .recommend-grid { grid-template-columns: 1fr; }
+          .recommend-thumb-wrapper { height: 200px; }
+        }
+      `}} />
     </div>
   );
 }

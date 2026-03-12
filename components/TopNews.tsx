@@ -1,6 +1,7 @@
-// components/TopNews.tsx
 import { getNewsPosts } from "@/lib/sanity.query";
 import Link from "next/link";
+// 1. IMPOR IMAGE UNTUK OPTIMASI PERFORMA
+import Image from "next/image";
 
 export default async function TopNews() {
   const allNews = await getNewsPosts() || [];
@@ -10,23 +11,23 @@ export default async function TopNews() {
     ? allNews.slice(3, 8) 
     : allNews.slice(0, 5); 
 
-  // Jika data kosong, tampilkan placeholder agar layout tidak pecah
   if (topBarNews.length === 0) return null;
 
   return (
     <div 
-      className="hide-on-mobile" // Konsisten dengan class di layout utama
+      className="hide-on-mobile" 
       style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(5, 1fr)', 
         gap: '15px', 
         padding: '20px 0',
-        borderBottom: '1px solid var(--border-light)' 
+        borderBottom: '1px solid #eee' 
       }}
     >
       {topBarNews.map((item: any) => (
         <Link 
-          href={`/${item.category || 'berita'}/${item.slug?.current || item.slug}`} 
+          // PERBAIKAN: Gunakan item.slug secara langsung (string murni dari query)
+          href={`/${item.category?.toLowerCase() || 'berita'}/${item.slug}`} 
           key={item._id} 
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
@@ -41,23 +42,28 @@ export default async function TopNews() {
               position: 'relative',
               boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
             }}>
-              <img 
+              {/* 2. OPTIMASI GAMBAR DENGAN SIZES */}
+              <Image 
                 src={item.image || "/logo-md.png"} 
                 alt={item.title} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                fill
+                // Hanya download gambar selebar 20% layar (untuk 5 kolom)
+                sizes="(max-width: 1200px) 20vw, 240px"
+                style={{ objectFit: 'cover' }} 
               />
               <div style={{ 
                 position: 'absolute', top: '5px', left: '5px', 
-                backgroundColor: 'var(--abah-blue)', color: '#fff', 
+                backgroundColor: '#004a8e', color: '#fff', 
                 fontSize: '9px', padding: '2px 6px', borderRadius: '4px',
-                textTransform: 'uppercase', fontWeight: 'bold'
+                textTransform: 'uppercase', fontWeight: 'bold',
+                zIndex: 1
               }}>
                 {item.category}
               </div>
             </div>
 
             <h4 style={{ 
-              fontSize: '12px', fontWeight: '800', color: 'var(--abah-blue)',
+              fontSize: '12px', fontWeight: '800', color: '#004a8e',
               lineHeight: '1.4', margin: '0 0 5px 0', height: '34px',
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
               overflow: 'hidden'
@@ -65,7 +71,6 @@ export default async function TopNews() {
               {item.title}
             </h4>
 
-            {/* suppressHydrationWarning ditambahkan pada data angka yang dinamis */}
             <div 
               suppressHydrationWarning
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#999' }}
@@ -74,7 +79,7 @@ export default async function TopNews() {
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              <span style={{ fontWeight: '700', color: 'var(--abah-gold)' }}>
+              <span style={{ fontWeight: '700', color: '#ffc107' }}>
                 {item.views || 0}
               </span>
             </div>
