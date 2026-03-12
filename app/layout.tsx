@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
-// 1. IMPOR FONT DARI NEXT/FONT/GOOGLE
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import InstallationTracker from "@/components/InstallationTracker"; 
 
-// 2. KONFIGURASI FONT UNTUK OPTIMASI PERFORMA
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  display: "swap", // Menghindari teks hilang saat font didownload
+  display: "swap",
   variable: "--font-plus-jakarta",
   weight: ["400", "500", "600", "700", "800"],
 });
@@ -26,8 +24,8 @@ export const metadata: Metadata = {
     default: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
     template: "%s | PCM Kembaran"
   },
-  description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi dakwah berkemajuan.",
-  keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Berkemajuan", "Khutbah Jumat"],
+  description: "Portal resmi PCM Kembaran. Wadah edukasi, literasi Islam, dan informasi dakwah berkemajuan bagi umat di wilayah Kembaran dan sekitarnya.",
+  keywords: ["PCM Kembaran", "Muhammadiyah Kembaran", "Dakwah Berkemajuan", "Khutbah Jumat", "Banyumas"],
   manifest: "/manifest.json", 
   appleWebApp: {
     capable: true,
@@ -36,7 +34,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
-    description: "Menyajikan konten dakwah murni yang menyejukkan dan mencerahkan.",
+    description: "Menyajikan konten dakwah murni yang menyejukkan, mencerahkan, dan berkemajuan.",
     url: 'https://pcmkembaran.com',
     siteName: 'PCM Kembaran',
     locale: 'id_ID',
@@ -48,22 +46,57 @@ export const metadata: Metadata = {
     title: "PCM Kembaran - Dakwah Berkemajuan, Mencerahkan Kehidupan",
     images: ['/opengraph-image.jpg'], 
   },
+  // 1. UPDATE ICON: Agar Google & Browser mengenali favicon Anda
   icons: {
-    icon: "/favicon.ico",
-    apple: "/icons/icon-192x192.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" }, // File .ico standar
+      { url: "/icon.png", type: "image/png", sizes: "32x32" }, // Ikon PNG kecil
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180" }, // Khusus iPhone/iPad
+    ],
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  
+  // 2. DATA TERSTRUKTUR (JSON-LD): "Surat Cinta" buat Google
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PCM Kembaran",
+    "alternateName": "Pimpinan Cabang Muhammadiyah Kembaran",
+    "url": "https://pcmkembaran.com",
+    "logo": "https://pcmkembaran.com/icon.png", // Pastikan file ini ada di /public
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "", 
+      "contactType": "customer service",
+      "areaServed": "ID",
+      "availableLanguage": "Indonesian"
+    },
+    "sameAs": [
+      "https://www.instagram.com/pcmkembaran.bms/", // Sesuaikan link medsos jika ada
+      "https://www.youtube.com/@pcmkembaran"
+    ],
+    "description": "Portal resmi PCM Kembaran. Pusat edukasi, literasi Islam, dan informasi dakwah berkemajuan."
+  };
+
   return (
     <html lang="id" className={plusJakartaSans.variable}>
+      <head>
+        {/* Menyisipkan JSON-LD ke dalam head secara aman */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body 
         className="antialiased" 
         style={{ 
           backgroundColor: '#fcfcfc',
           color: '#1a1a1a',
           margin: 0,
-          // Menerapkan font secara global agar efisien
           fontFamily: 'var(--font-plus-jakarta), sans-serif'
         }}
       >

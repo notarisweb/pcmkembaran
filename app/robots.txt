@@ -1,0 +1,16 @@
+import { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: [
+        '/studio/', // Melarang Google mengindeks halaman Sanity Studio
+        '/admin/',  // Melarang halaman admin (jika ada)
+        '/api/',    // Melarang folder API agar tidak muncul di pencarian
+      ],
+    },
+    sitemap: 'https://pcmkembaran.com/sitemap.xml',
+  }
+}
