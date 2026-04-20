@@ -1,8 +1,8 @@
+// app/page.tsx
 import { client } from "@/lib/sanity.client"; 
 import { getAllPosts, getKhutbahPosts } from "@/lib/sanity.query";
-import dynamic from "next/dynamic"; // Gunakan nama standar 'dynamic'
 
-// Komponen standar (Server Components) - Import Normal lebih cepat & SEO Friendly
+// 1. IMPORT NORMAL (Hapus 'next/dynamic' untuk komponen ini)
 import Headline from "@/components/Headline";
 import TopNews from "@/components/TopNews";
 import PopularSidebar from "@/components/PopularSidebar";
@@ -13,11 +13,12 @@ import InfoDakwah from "@/components/InfoDakwah";
 import LatestArticlesSidebar from "@/components/LatestArticlesSidebar";
 import BentoDashboard from "@/components/BentoDashboard"; 
 
-// Hanya gunakan dynamic untuk Client Components yang butuh 'window' atau 'document'
-const NotificationButton = dynamic(() => import("@/components/NotificationButton"), { ssr: false });
-const MissionaryMap = dynamic(() => import("@/components/MapWrapper"), { ssr: false }); // Jika ada peta
+// Import Wrapper Peta & Tombol Notif secara normal
+// Karena di dalam komponen ini sudah ada logika 'use client' masing-masing
+import MapWrapper from "@/components/MapWrapper"; 
+import NotificationButton from "@/components/NotificationButton"; 
 
-export const revalidate = 60; // Update data tiap 60 detik (ISR)
+export const revalidate = 60; 
 
 export default async function Home() {
   const bentoQuery = `{
@@ -35,7 +36,6 @@ export default async function Home() {
     "masjidCount": count(*[_type == "masjid"])
   }`;
 
-  // Eksekusi semua data sekaligus (Tactical Maneuver)
   const [allPosts, khutbahData, bentoData] = await Promise.all([
     getAllPosts(),
     getKhutbahPosts(),
@@ -54,6 +54,11 @@ export default async function Home() {
 
       <section style={{ marginTop: '45px' }}>
         <BentoDashboard data={bentoData} />
+      </section>
+
+      {/* RENDER PETA (MapWrapper sudah handle Client-Side secara internal) */}
+      <section style={{ marginTop: '50px' }}>
+         <MapWrapper rantings={[]} /> {/* Sesuaikan data rantingnya jika ada */}
       </section>
 
       <section className="hide-on-mobile" style={{ marginTop: '50px' }}>
@@ -76,12 +81,10 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Tombol Notifikasi (Client Side Only) */}
       <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 2000 }}>
         <NotificationButton />
       </div>
 
-      {/* Responsive Tactical CSS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 992px) { 
           .hide-on-mobile { display: none !important; } 
