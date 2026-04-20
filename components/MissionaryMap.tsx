@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup, Circle, GeoJSON, FeatureGroup, Tooltip } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import L, { LatLngExpression } from 'leaflet'
 import { useEffect, useState } from 'react'
 
 const createTacticalIcon = () => {
@@ -21,7 +21,9 @@ const createTacticalIcon = () => {
 export default function MissionaryMap({ rantings = [] }: { rantings: any[] }) {
   const [icon, setIcon] = useState<any>(null);
   const [geoData, setGeoData] = useState<any>(null);
-  const center: [number, number] = [-7.4264, 109.2892];
+  
+  // Kalibrasi Koordinat Pusat
+  const center: LatLngExpression = [-7.4264, 109.2892];
 
   useEffect(() => {
     setIcon(createTacticalIcon());
@@ -38,16 +40,15 @@ export default function MissionaryMap({ rantings = [] }: { rantings: any[] }) {
     fillColor: '#0ea5e9',
     fillOpacity: 0.08,
     color: '#38bdf8',
-    weight: 2,           // Garis lebih tegas
-    dashArray: '8, 8',   // Gaya militer
-    lineJoin: 'round' as const, // ANTI-RUNCING: Menumpulkan sudut kaku
+    weight: 2,
+    dashArray: '8, 8',
+    lineJoin: 'round' as const,
     lineCap: 'round' as const
   });
 
   const onEachSector = (feature: any, layer: any) => {
     const villageName = feature.properties.nm_kelurahan || feature.properties.NAMOBJ;
     
-    // Tooltip Sektor (Besar & Muncul saat Hover)
     layer.bindTooltip(`SECTOR: ${villageName.toUpperCase()}`, {
       sticky: true,
       direction: 'center',
@@ -75,7 +76,14 @@ export default function MissionaryMap({ rantings = [] }: { rantings: any[] }) {
       {/* HUD GRID OVERLAY */}
       <div className="tactical-grid" style={{ position: 'absolute', inset: 0, zIndex: 410 }}></div>
 
-      <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%', background: '#020617' }}>
+      {/* FIXED: Menggunakan type-casting (as any) untuk menghindari error 'center' di TS */}
+      <MapContainer 
+        {...({
+          center: center,
+          zoom: 13,
+          style: { height: '100%', width: '100%', background: '#020617' }
+        } as any)}
+      >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
 
         {/* RENDER SEKTOR DESA ASLI (PRECISION MODE) */}
@@ -83,7 +91,6 @@ export default function MissionaryMap({ rantings = [] }: { rantings: any[] }) {
           data={geoData} 
           style={sectorStyle} 
           onEachFeature={onEachSector}
-          smoothFactor={1.0} 
         />
 
         {/* RENDER NODES RANTING */}
