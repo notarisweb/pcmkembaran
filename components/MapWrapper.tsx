@@ -7,35 +7,36 @@ const MissionaryMap = dynamic(() => import("./MissionaryMap"), {
   ssr: false,
   loading: () => (
     <div style={{ 
-      height: '700px', // Disamakan dengan tinggi asli peta agar tidak "loncat"
+      height: '700px', // Konsisten dengan tinggi peta
       width: '100%',
-      background: '#020617', // Match dengan tema gelap tactical
+      background: '#f8fafc', // Warna dasar Slate 50 (Terang & Bersih)
       borderRadius: '24px', 
       display: 'flex', 
       flexDirection: 'column',
       alignItems: 'center', 
-      justifyContent: 'center', // FIX: Menggunakan camelCase (huruf C besar)
-      border: '2px solid #334155',
-      gap: '15px'
+      justifyContent: 'center',
+      border: '2px solid #e2e8f0', // Border abu-abu muda halus
+      gap: '20px'
     }}>
-      {/* Animasi Loading Sederhana ala Radar */}
+      {/* Animasi Loading PCM Blue */}
       <div style={{
-        width: '40px',
-        height: '40px',
-        border: '3px solid rgba(56, 189, 248, 0.2)',
-        borderTop: '3px solid #38bdf8',
+        width: '45px',
+        height: '45px',
+        border: '4px solid #e2e8f0',
+        borderTop: '4px solid #004a8e', // Menggunakan Biru Utama PCM
         borderRadius: '50%',
         animation: 'spin 1s linear infinite'
       }}></div>
       
       <div style={{ 
-        color: '#38bdf8', 
-        fontFamily: 'monospace', 
-        fontSize: '12px',
-        letterSpacing: '2px',
-        fontWeight: 'bold'
+        color: '#004a8e', 
+        fontFamily: 'sans-serif', 
+        fontSize: '13px',
+        letterSpacing: '1px',
+        fontWeight: '900',
+        textTransform: 'uppercase'
       }}>
-        INITIALIZING_TACTICAL_RADAR...
+        Menginisialisasi Peta Dakwah...
       </div>
 
       <style jsx>{`
@@ -49,6 +50,10 @@ const MissionaryMap = dynamic(() => import("./MissionaryMap"), {
 });
 
 export default function MapWrapper({ rantings }: { rantings: any[] }) {
-  // Komponen ini bertugas sebagai jembatan yang aman untuk Leaflet di Next.js
-  return <MissionaryMap rantings={rantings} />;
+  // Wrapper ini memastikan Leaflet tidak dipanggil saat Pre-rendering di Server
+  return (
+    <div className="map-container-shadow" style={{ filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.05))' }}>
+      <MissionaryMap rantings={rantings} />
+    </div>
+  );
 }

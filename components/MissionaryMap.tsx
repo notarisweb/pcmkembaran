@@ -1,135 +1,213 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, Circle, GeoJSON, FeatureGroup, Tooltip } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, GeoJSON, FeatureGroup, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L, { LatLngExpression } from 'leaflet'
-import { useEffect, useState } from 'react'
-
-const createTacticalIcon = () => {
-  if (typeof window === 'undefined') return null;
-  return new L.DivIcon({
-    className: 'custom-div-icon',
-    html: `
-      <div class="ping-signal" style="width: 24px; height: 24px; position: absolute; top: -6px; left: -6px;"></div>
-      <div style="background-color: #ffc107; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; position: relative; z-index: 10; box-shadow: 0 0 15px #ffc107;"></div>
-    `,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7]
-  });
-}
+import { useEffect, useState, useRef } from 'react'
 
 export default function MissionaryMap({ rantings = [] }: { rantings: any[] }) {
-  const [icon, setIcon] = useState<any>(null);
   const [geoData, setGeoData] = useState<any>(null);
-  
-  // Kalibrasi Koordinat Pusat
+  const [hoveredData, setHoveredData] = useState<{ name: string; type: string } | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
   const center: LatLngExpression = [-7.4264, 109.2892];
 
   useEffect(() => {
-    setIcon(createTacticalIcon());
-    
-    // MEMANGGIL DATA HASIL EKSTRAKSI TADI
     fetch('/data/kembaran-sectors.json')
       .then(res => res.json())
       .then(data => setGeoData(data))
-      .catch(err => console.error("GAGAL MEMUAT SEKTOR:", err));
+      .catch(err => console.error("RADAR_ERROR:", err));
   }, []);
 
-  // STYLE SEKTOR (HALUS & TIDAK RUNCING)
-  const sectorStyle = () => ({
-    fillColor: '#0ea5e9',
-    fillOpacity: 0.08,
-    color: '#38bdf8',
-    weight: 2,
-    dashArray: '8, 8',
-    lineJoin: 'round' as const,
-    lineCap: 'round' as const
-  });
-
-  const onEachSector = (feature: any, layer: any) => {
-    const villageName = feature.properties.nm_kelurahan || feature.properties.NAMOBJ;
-    
-    layer.bindTooltip(`SECTOR: ${villageName.toUpperCase()}`, {
-      sticky: true,
-      direction: 'center',
-      className: 'leaflet-tooltip-tactical'
-    });
-
-    layer.on({
-      mouseover: (e: any) => {
-        e.target.setStyle({ fillOpacity: 0.25, weight: 3, color: '#ffc107' });
-      },
-      mouseout: (e: any) => {
-        e.target.setStyle(sectorStyle());
-      }
-    });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (mapContainerRef.current) {
+      const rect = mapContainerRef.current.getBoundingClientRect();
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
   };
 
-  if (!geoData) return <div className="text-pcm-blue font-mono p-10">INITIALIZING TACTICAL RADAR...</div>;
+  const sectorStyle = (feature: any) => {
+    const isHovered = hoveredData?.name === (feature.properties.nm_kelurahan || feature.properties.NAMOBJ).toUpperCase();
+    return {
+      fillColor: isHovered ? '#ffc107' : '#004a8e',
+      fillOpacity: isHovered ? 0.3 : 0.05,
+      color: isHovered ? '#ffc107' : '#004a8e',
+      weight: isHovered ? 3 : 1.5,
+      dashArray: isHovered ? '0' : '5, 5',
+    };
+  };
 
   return (
-    <div className="tactical-map-container" style={{ 
-      height: '700px', borderRadius: '16px', overflow: 'hidden', 
-      border: '2px solid #334155', position: 'relative', backgroundColor: '#020617'
-    }}>
+    <div 
+      ref={mapContainerRef}
+      onMouseMove={handleMouseMove}
+      className="relative h-[700px] w-full rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl bg-slate-50 cursor-crosshair"
+    >
       
-      {/* HUD GRID OVERLAY */}
-      <div className="tactical-grid" style={{ position: 'absolute', inset: 0, zIndex: 410 }}></div>
+      {/* 🎯 TACTICAL HUD TARGETING - Desktop Only */}
+      {hoveredData && (
+        <div 
+          className="absolute z-[1005] pointer-events-none hidden md:block"
+          style={{ 
+            left: mousePos.x + 30, 
+            top: mousePos.y - 30,
+            transition: 'left 0.05s linear, top 0.05s linear'
+          }}
+        >
+          <div className="relative p-4 min-w-[200px] backdrop-blur-sm bg-slate-900/40 border border-yellow-400/20">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-yellow-400"></div>
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-yellow-400"></div>
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-yellow-400"></div>
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-yellow-400"></div>
 
-      {/* FIXED: Menggunakan type-casting (as any) untuk menghindari error 'center' di TS */}
+            <div className="absolute inset-0 overflow-hidden">
+               <div className="w-full h-[2px] bg-yellow-400/30 shadow-[0_0_10px_#ffc107] animate-scanline"></div>
+            </div>
+
+            <div className="relative z-10 flex flex-col gap-1">
+              <div className="flex justify-between items-center border-b border-yellow-400/30 pb-1 mb-1">
+                <span className="text-[9px] font-black text-yellow-400 tracking-[0.2em] animate-pulse">
+                  {hoveredData.type}_IDENTIFIED
+                </span>
+                <span className="text-[8px] font-mono text-white/50">TRK_ID: {Math.floor(Math.random() * 900) + 100}</span>
+              </div>
+              
+              <div className="text-white text-xl font-black tracking-tighter uppercase leading-none italic">
+                {hoveredData.name}
+              </div>
+
+              <div className="flex gap-4 mt-2 border-t border-white/10 pt-2">
+                <div className="flex flex-col">
+                  <span className="text-[7px] text-white/40 font-mono">LAT_REF</span>
+                  <span className="text-[9px] text-white font-mono">-7.426</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[7px] text-white/40 font-mono">LNG_REF</span>
+                  <span className="text-[9px] text-white font-mono">109.289</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[7px] text-white/40 font-mono">SIGNAL</span>
+                  <span className="text-[9px] text-green-400 font-mono">LOCK</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📱 HUD MOBILE */}
+      {hoveredData && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1002] md:hidden w-[85%] animate-in fade-in slide-in-from-top-4">
+          <div className="bg-slate-900/95 p-4 rounded-2xl border-b-4 border-yellow-400 shadow-2xl flex flex-col items-center">
+            <span className="text-yellow-400 text-[8px] font-black tracking-[0.3em] mb-1">TARGET_LOCKED</span>
+            <span className="text-white font-black uppercase text-lg tracking-tighter italic">
+               {hoveredData.name}
+            </span>
+          </div>
+        </div>
+      )}
+
       <MapContainer 
         {...({
           center: center,
           zoom: 13,
-          style: { height: '100%', width: '100%', background: '#020617' }
+          zoomControl: false,
+          style: { height: '100%', width: '100%' }
         } as any)}
       >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+        <ZoomControl position="bottomright" />
 
-        {/* RENDER SEKTOR DESA ASLI (PRECISION MODE) */}
-        <GeoJSON 
-          data={geoData} 
-          style={sectorStyle} 
-          onEachFeature={onEachSector}
-        />
+        {geoData && (
+          <GeoJSON 
+            data={geoData} 
+            style={sectorStyle} 
+            onEachFeature={(feature, layer) => {
+              const name = (feature.properties.nm_kelurahan || feature.properties.NAMOBJ).toUpperCase();
+              layer.on({
+                mouseover: () => setHoveredData({ name, type: 'SECTOR' }),
+                mouseout: () => setHoveredData(null),
+                click: () => setHoveredData({ name, type: 'SECTOR' })
+              });
+            }}
+          />
+        )}
 
-        {/* RENDER NODES RANTING */}
         {rantings.map((prm) => {
           if (!prm.latitude || !prm.longitude) return null;
           const pos: [number, number] = [parseFloat(prm.latitude), parseFloat(prm.longitude)];
-          
           return (
             <FeatureGroup key={prm._id}>
-              <Circle center={pos} radius={850} pathOptions={{ fillColor: '#0ea5e9', fillOpacity: 0.05, color: '#0ea5e9', weight: 0.5, dashArray: '5, 5', className: 'radar-pulse-ring' }} />
-              {icon && (
-                <Marker position={pos} icon={icon}>
-                  <Tooltip permanent direction="top" offset={[0, -18]} className="leaflet-tooltip-tactical">
-                    <span style={{ fontSize: '12px', fontWeight: 950 }}>PRM {prm.name.toUpperCase()}</span>
-                  </Tooltip>
-                  <Popup className="tactical-popup">
-                    <div style={{ background: '#0f172a', color: '#fff', padding: '15px', borderRadius: '10px', minWidth: '200px' }}>
-                      <h4 style={{ margin: '0', fontSize: '20px', fontWeight: 950 }}>{prm.name}</h4>
-                      <p style={{ margin: '5px 0 0', fontSize: '15px', color: '#ffc107', fontWeight: 800 }}>{prm.leader?.toUpperCase()}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              )}
+              <Marker 
+                position={pos} 
+                eventHandlers={{
+                  mouseover: () => setHoveredData({ name: `PRM ${prm.name.toUpperCase()}`, type: 'NODE' }),
+                  mouseout: () => setHoveredData(null),
+                  click: () => setHoveredData({ name: `PRM ${prm.name.toUpperCase()}`, type: 'NODE' })
+                }}
+                icon={new L.DivIcon({
+                  className: 'military-node',
+                  html: `<div class="node-scanner"></div><div class="node-core"></div>`,
+                  iconSize: [20, 20], iconAnchor: [10, 10]
+                })}
+              >
+                <Popup>
+                   <div className="font-bold text-slate-800">PRM {prm.name}</div>
+                </Popup>
+              </Marker>
             </FeatureGroup>
           );
         })}
       </MapContainer>
 
-      {/* HUD UI TEXT */}
-      <div className="tactical-hud-text" style={{ position: 'absolute', top: 30, right: 30, zIndex: 1001, textAlign: 'right', color: '#38bdf8' }}>
-        <div style={{ border: '2px solid #38bdf8', padding: '15px', background: 'rgba(2, 6, 23, 0.95)', boxShadow: '0 0 30px rgba(56, 189, 248, 0.4)' }}>
-          KEMBARAN_GRID_MAP <br/>
-          NODES: {rantings.length} ONLINE_
+      {/* 📡 SYSTEM STATUS OVERLAY - MODERN RED ALERT EDITION */}
+      <div className="absolute top-8 right-8 z-[1001] hidden sm:block">
+        <div className="bg-white/90 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-2xl min-w-[200px]">
+           <div className="flex items-center justify-between mb-2">
+             <div className="flex items-center gap-2">
+                {/* 🔴 LAMPU KEDIP MERAH REALISTIK */}
+                <div className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_10px_#dc2626]"></span>
+                </div>
+                <span className="text-[10px] font-black text-red-600 uppercase tracking-widest animate-pulse">Live_Signal</span>
+             </div>
+             <span className="text-[8px] font-mono text-slate-400">PCM_KM_02</span>
+           </div>
+           
+           <div className="flex items-baseline gap-2">
+              <div className="text-4xl font-black text-slate-800 tracking-tighter leading-none">{rantings.length}</div>
+              <div className="text-lg font-black text-slate-400 tracking-tight uppercase">Ranting</div>
+           </div>
+           
+           <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[8px] font-bold text-blue-600 uppercase">Grid_Map_Live</span>
+              <div className="flex gap-1">
+                <div className="w-1 h-1 bg-blue-600 rounded-full"></div>
+                <div className="w-1 h-1 bg-blue-300 rounded-full"></div>
+                <div className="w-1 h-1 bg-blue-100 rounded-full"></div>
+              </div>
+           </div>
         </div>
       </div>
 
-      <div className="tactical-hud-text" style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 1001, color: '#38bdf8', padding: '12px 25px', background: 'rgba(2, 6, 23, 0.95)', borderLeft: '5px solid #ffc107' }}>
-        SECTOR_SCAN: 100% COMPLETE // MISSION_STATUS: SECURED_
-      </div>
+      <style jsx global>{`
+        @keyframes scanline {
+          0% { transform: translateY(-20px); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateY(100px); opacity: 0; }
+        }
+        .animate-scanline { animation: scanline 2s linear infinite; }
+        .node-core { width: 12px; height: 12px; background: #ffc107; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 10px #ffc107; position: relative; z-index: 2; }
+        .node-scanner { position: absolute; width: 34px; height: 34px; border: 1px solid #ffc107; border-radius: 50%; top: -11px; left: -11px; animation: scan 2.5s infinite linear; opacity: 0.4; }
+        @keyframes scan { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+        .leaflet-container { background: #f8fafc !important; cursor: crosshair !important; }
+        .military-node { display: flex; align-items: center; justify-content: center; }
+      `}</style>
     </div>
   );
 }
