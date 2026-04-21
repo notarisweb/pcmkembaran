@@ -83,9 +83,28 @@ export default async function PostDetail({
             {post.body && <PortableTextContent value={post.body} />}
           </div>
 
+          {/* ================= SEKTOR DOWNLOAD (KEMBALI NORMAL & RESPONSIVE) ================= */}
+          {category === 'unduhan' && post.downloadLink && (
+            <section className="download-box-tactical">
+              <div className="download-info">
+                <p className="dl-label">SEKTOR DOKUMENTASI</p>
+                <h3 className="dl-title">Unduh Berkas Tersedia</h3>
+                {post.fileSize && <span className="dl-size">Info: {post.fileSize}</span>}
+              </div>
+              <a 
+                href={post.downloadLink} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="dl-button-modern"
+              >
+                <span>📥 DOWNLOAD DOKUMENTASI</span>
+              </a>
+            </section>
+          )}
+
           <CommentSection slug={slug} />
 
-          {/* POSTINGAN TERKAIT (TETAP 3) */}
+          {/* POSTINGAN TERKAIT */}
           {relatedPosts?.length > 0 && (
             <section className="related-section">
               <h3 className="section-title">Postingan Terkait</h3>
@@ -117,7 +136,6 @@ export default async function PostDetail({
               </div>
             </div>
 
-            {/* 2. TERPOPULER (5 ITEM) */}
             <div className="sidebar-widget">
               <h3 className="widget-title blue">TERPOPULER</h3>
               <div className="popular-wrapper">
@@ -154,11 +172,26 @@ export default async function PostDetail({
         .meta-sub { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: 500; }
         .views { color: var(--abah-blue); font-weight: 700; }
         .featured-img-container { position: relative; width: 100%; aspect-ratio: 16/9; max-height: 500px; border-radius: 24px; overflow: hidden; margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); background: #f1f5f9; }
-        
-        /* THE FIX: JEDA ANTAR PARAGRAF */
         .article-content { font-size: 19px; line-height: 1.85; color: #334155; }
         .article-content p { margin-bottom: 1.8rem; }
-        .article-content p:last-child { margin-bottom: 0; }
+
+        /* DOWNLOAD BOX CSS */
+        .download-box-tactical { 
+          margin: 40px 0; padding: 30px; 
+          background: #f8fafc; border: 1px solid var(--border); 
+          border-left: 6px solid var(--abah-blue); border-radius: 24px; 
+          display: flex; justify-content: space-between; align-items: center; gap: 20px;
+        }
+        .dl-label { font-size: 10px; font-weight: 900; color: var(--abah-blue); letter-spacing: 2px; margin-bottom: 4px; }
+        .dl-title { font-size: 18px; font-weight: 800; color: #1e293b; margin: 0; }
+        .dl-size { font-size: 11px; font-weight: 700; color: #94a3b8; }
+        .dl-button-modern { 
+          background: var(--abah-blue); color: #fff; 
+          padding: 16px 32px; border-radius: 16px; 
+          font-weight: 900; font-size: 12px; text-decoration: none; 
+          transition: 0.3s; white-space: nowrap; box-shadow: 0 10px 20px rgba(0,74,142,0.15);
+        }
+        .dl-button-modern:hover { background: var(--abah-gold); color: var(--abah-blue); transform: translateY(-3px); }
 
         .sidebar { height: 100%; min-width: 340px; }
         .sticky-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 35px; }
@@ -190,7 +223,14 @@ export default async function PostDetail({
         .related-card { text-decoration: none; color: inherit; }
         .related-thumb { position: relative; aspect-ratio: 16/9; border-radius: 15px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; }
         .related-card h4 { font-size: 15px; font-weight: 800; line-height: 1.4; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        @media (max-width: 992px) { .main-grid-layout { grid-template-columns: 1fr; } .sticky-sidebar { position: static; } .sidebar { min-width: 0; } }
+        
+        @media (max-width: 992px) { 
+          .main-grid-layout { grid-template-columns: 1fr; } 
+          .sticky-sidebar { position: static; } 
+          .sidebar { min-width: 0; } 
+          .download-box-tactical { flex-direction: column; text-align: center; padding: 25px; }
+          .dl-button-modern { width: 100%; }
+        }
       `}} />
     </main>
   );

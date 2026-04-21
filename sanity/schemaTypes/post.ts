@@ -6,31 +6,38 @@ export default defineType({
   title: 'Konten Utama',
   type: 'document',
   icon: DocumentIcon,
+  // Menambahkan Group agar UI Sanity Studio lebih rapi
+  groups: [
+    { name: 'konten', title: 'Isi Konten' },
+    { name: 'unduhan', title: 'Sektor Unduhan' },
+    { name: 'meta', title: 'Meta & Statistik' },
+  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Judul Konten',
       type: 'string',
+      group: 'konten',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug (URL)',
       type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
+      group: 'konten',
+      options: { source: 'title', maxLength: 96 },
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'category',
       title: 'Kategori Konten',
       type: 'string',
+      group: 'konten',
       options: {
         list: [
           { title: 'Berita', value: 'berita' },
           { title: 'Artikel', value: 'artikel' },
+          { title: 'Unduhan', value: 'unduhan' },
           { title: 'Liputan Dakwah', value: 'liputan-dakwah' },
           { title: 'Pendidikan', value: 'pendidikan' },
           { title: 'Video', value: 'video' },
@@ -38,7 +45,6 @@ export default defineType({
           { title: 'Tokoh & Inspirasi', value: 'tokoh-inspirasi' },
           { title: 'Teknologi', value: 'teknologi' },
           { title: 'Kesehatan', value: 'kesehatan' },
-          { title: 'Unduhan', value: 'unduhan' },
           { title: "Tafsir Al-Qur'an", value: 'tafsir' },
           { title: 'Hadits Pilihan', value: 'hadits' },
           { title: 'Fiqih Praktis', value: 'fiqih' },
@@ -48,67 +54,57 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
 
-    /* --- KOLOM KHUSUS UNDUHAN (Muncul Otomatis jika Kategori 'unduhan' dipilih) --- */
-    defineField({
-      name: 'fileSource',
-      title: 'Upload File Langsung',
-      type: 'file',
-      description: 'Gunakan ini untuk mengunggah file PDF/Dokumen langsung ke Sanity.',
-      options: {
-        accept: '.pdf,.doc,.docx,.zip'
-      },
-      hidden: ({ document }) => document?.category !== 'unduhan',
-    }),
+    /* --- SEKTOR UNDUHAN (OPSIONAL & DINAMIS) --- */
     defineField({
       name: 'downloadLink',
-      title: 'Link Unduhan (Luar)',
+      title: 'Link Unduhan (Eksternal)',
       type: 'url',
-      description: 'Masukkan link Google Drive/Dropbox jika file sudah ada di sana.',
+      group: 'unduhan',
+      description: 'Tempel link Google Drive/Dropbox di sini.',
+      // Hanya muncul jika kategori 'unduhan' dipilih
       hidden: ({ document }) => document?.category !== 'unduhan',
     }),
     defineField({
       name: 'fileSize',
       title: 'Keterangan File',
       type: 'string',
-      description: 'Contoh: PDF, 2.5 MB, atau Versi 1.0',
+      group: 'unduhan',
+      description: 'Contoh: PDF, 2.5 MB',
       hidden: ({ document }) => document?.category !== 'unduhan',
     }),
 
-    /* --- KOLOM MEDIA & META --- */
+    /* --- MEDIA & META --- */
     defineField({
       name: 'mainImage',
       title: 'Gambar Utama',
       type: 'image',
-      options: {
-        hotspot: true,
-      },
+      group: 'konten',
+      options: { hotspot: true },
     }),
     defineField({
       name: 'publishedAt',
       title: 'Tanggal Terbit',
       type: 'datetime',
+      group: 'meta',
       initialValue: () => (new Date()).toISOString(),
     }),
     defineField({
       name: 'views',
       title: 'Jumlah Pembaca (Views)',
       type: 'number',
-      description: 'Admin bisa mengisi atau mengubah angka ini agar tampilan views terlihat keren di website.',
+      group: 'meta',
       initialValue: 0,
     }),
 
-    /* --- EDITOR KONTEN (Portable Text) --- */
+    /* --- EDITOR KONTEN --- */
     defineField({
       name: 'body',
       title: 'Isi Konten / Deskripsi',
       type: 'array',
+      group: 'konten',
       of: [
         { type: 'block' },
-        {
-          type: 'image',
-          options: { hotspot: true },
-        },
-        // OBJEK YOUTUBE AKTIF DI SINI
+        { type: 'image', options: { hotspot: true } },
         { type: 'youtube' } 
       ],
     }),
