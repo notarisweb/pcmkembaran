@@ -1,7 +1,7 @@
 import { client } from "@/lib/sanity.client";
 import Link from "next/link";
 import { Metadata } from "next";
-import { MapPin, Clock, User, ArrowRight, Bell, Home, Users, CheckCircle2, Navigation, Info } from "lucide-react";
+import { MapPin, ArrowRight, Bell, Home, Users, CheckCircle2, Navigation, mosque, Landmark } from "lucide-react";
 
 async function getMasidData() {
   const query = `*[_type == "masjid"] | order(order asc) {
@@ -16,195 +16,170 @@ async function getMasidData() {
     "jadwalKajian": *[_type == "jadwalKajian" && references(^._id)] | order(hari asc) {
       _id,
       hari,
-      ustadz,
-      waktu,
       tema
     }
   }`;
   try {
-    // MENGGUNAKAN cache: 'no-store' agar perubahan di Sanity langsung muncul (Anti-Delay)
+    // bypass cache agar sinkronisasi data dari Sanity Studio instan
     return await client.fetch(query, {}, { cache: 'no-store' });
   } catch (error) {
-    console.error("Gagal sinkronisasi data masjid:", error);
+    console.error("Gagal sinkronisasi data:", error);
     return [];
   }
 }
 
 export const metadata: Metadata = {
-  title: "Pusat Masjid & Dakwah | PCM Kembaran",
-  description: "Daftar masjid dan pusat keumatan di bawah naungan Pimpinan Cabang Muhammadiyah Kembaran.",
+  title: "Daftar Masjid & Pusat Keumatan | PCM Kembaran",
+  description: "Informasi lengkap masjid, mushola, dan pusat dakwah di bawah naungan Pimpinan Cabang Muhammadiyah Kembaran.",
 };
 
 export default async function MasjidPage() {
   const dataMasjid = await getMasidData();
 
   return (
-    <main id="pcm-masjid-modern-v3">
-      <div className="pcm-container">
-        
-        {/* HERO HEADER - KHIDMAT & WIBAWA */}
-        <header className="pcm-hero-header">
-          <div className="pcm-badge-top">Sektor Keumatan</div>
-          <h1>MASJID & PUSAT PERADABAN</h1>
-          <p>Membina pusat peribadatan dan persemaian ilmu di wilayah Kembaran.</p>
-          <div className="pcm-glow-divider"></div>
-        </header>
+    <main className="min-h-screen bg-[#fcfdfe] font-sans text-slate-900 pb-24">
+      
+      {/* 1. HEADER SECTION (Clean & Authoritative) */}
+      <header className="bg-white border-b border-slate-100 py-16 md:py-24 mb-12">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#004a8e] rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+            <Landmark size={14} /> Sektor Keumatan & Dakwah
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6 uppercase">
+            MASJID & <span className="text-[#004a8e]">PUSAT PERADABAN</span>
+          </h1>
+          <p className="max-w-2xl mx-auto text-slate-500 font-medium leading-relaxed">
+            Mengelola dan membina pusat peribadatan serta persemaian ilmu dakwah Islam yang berkemajuan di seluruh wilayah Kembaran.
+          </p>
+        </div>
+      </header>
 
-        {/* BANNER INFORMASI KAJIAN */}
-        <div className="pcm-banner-update">
-           <div className="info-content">
-              <div className="info-icon-wrapper">
-                 <Bell className="text-yellow-400" size={28} />
-                 <div className="info-ping"></div>
+      <div className="max-w-7xl mx-auto px-6">
+        
+        {/* 2. UPDATE BANNER (Modern Card Style) */}
+        <div className="bg-[#004a8e] rounded-xl p-8 md:p-12 mb-16 flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl shadow-blue-900/20 relative overflow-hidden group">
+           {/* Dekorasi Islami Halus */}
+           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform duration-700">
+              <CheckCircle2 size={120} />
+           </div>
+           
+           <div className="flex items-center gap-6 relative z-10">
+              <div className="w-16 h-16 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center shrink-0">
+                 <Bell className="text-[#ffc107] animate-pulse" size={32} />
               </div>
-              <div className="info-text">
-                 <h4>Jadwal Kajian Hari Ini</h4>
-                 <p>Dapatkan flyer otomatis untuk keperluan syiar dan dakwah digital hari ini.</p>
+              <div>
+                 <h4 className="text-white text-xl font-black uppercase tracking-tight mb-1">Informasi Kajian Terkini</h4>
+                 <p className="text-blue-100/70 text-sm font-medium">Dapatkan update jadwal dan flyer kajian harian melalui sistem otomatis kami.</p>
               </div>
            </div>
-           <Link href="/kajian-hari-ini" className="pcm-btn-update">
-              Lihat Jadwal Terkini <ArrowRight size={18} />
+           <Link href="/kajian-hari-ini" className="relative z-10 bg-[#ffc107] text-[#004a8e] px-8 py-4 rounded-lg font-black text-xs uppercase tracking-widest hover:bg-white transition-all shadow-xl active:scale-95 flex items-center gap-3">
+              Lihat Agenda Hari Ini <ArrowRight size={18} />
            </Link>
         </div>
 
-        {/* GRID MASJID */}
+        {/* 3. GRID MASJID (Sharp & Balanced) */}
         {dataMasjid.length > 0 ? (
-          <div className="pcm-masjid-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {dataMasjid.map((masjid: any) => {
-              // Cek ketersediaan slug untuk memastikan link aktif
               const hasSlug = !!masjid.slug;
               
               return (
-                <div key={masjid._id} className={`pcm-masjid-card group ${!hasSlug ? 'pending-data' : ''}`}>
+                <article key={masjid._id} className="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-500 hover:shadow-2xl hover:border-[#004a8e]/30 group">
                   
-                  {/* FULL CARD LINK */}
-                  <Link 
-                    href={hasSlug ? `/masjid/${masjid.slug}` : '#'} 
-                    className="pcm-card-main-link"
-                  >
-                    <div className="pcm-card-visual">
-                      <img 
-                        src={masjid.imageUrl || "/logo-md.png"} 
-                        alt={masjid.name} 
-                        className="pcm-main-img"
-                        loading="lazy" 
-                      />
-                      <div className="pcm-visual-overlay">
-                        {hasSlug ? (
-                          <span className="view-profile-label">Lihat Profil Masjid <ArrowRight size={14} /></span>
-                        ) : (
-                          <span className="pending-badge">Slug Belum Diatur</span>
-                        )}
-                      </div>
-                      {masjid.kapasitas && (
-                        <div className="pcm-capacity-tag">
-                          <Users size={12} /> {masjid.kapasitas} Jemaah
-                        </div>
-                      )}
+                  {/* Visual Frame */}
+                  <Link href={hasSlug ? `/masjid/${masjid.slug}` : '#'} className="block relative aspect-[16/10] overflow-hidden bg-slate-100 border-b border-slate-100">
+                    <img 
+                      src={masjid.imageUrl || "/logo-md.png"} 
+                      alt={masjid.name} 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                       <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                          Lihat Detail Masjid <ArrowRight size={14} className="text-[#ffc107]" />
+                       </span>
                     </div>
-
-                    <div className="pcm-card-body">
-                      <h3 className="pcm-masjid-title">{masjid.name}</h3>
-                      <p className="pcm-masjid-location">
-                        <MapPin size={14} className="text-[#004a8e]" /> {masjid.address}
-                      </p>
-
-                      <div className="pcm-schedule-preview">
-                        <h4 className="schedule-label">Jadwal Pengajian:</h4>
-                        {masjid.jadwalKajian && masjid.jadwalKajian.length > 0 ? (
-                          <div className="mini-list">
-                            {masjid.jadwalKajian.slice(0, 2).map((kj: any) => (
-                              <div key={kj._id} className="mini-item">
-                                <span className="day">{kj.hari}</span>
-                                <span className="topic truncate">{kj.tema || 'Kajian Umum'}</span>
-                              </div>
-                            ))}
-                            {masjid.jadwalKajian.length > 2 && (
-                              <span className="more-tag">+{masjid.jadwalKajian.length - 2} Jadwal Lainnya</span>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="empty-schedule text-xs italic font-bold text-slate-300">Jadwal pengajian belum tersedia</p>
-                        )}
-                      </div>
+                    
+                    {/* Top Badges */}
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                       {masjid.kapasitas && (
+                         <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <Users size={12} className="text-[#ffc107]" /> {masjid.kapasitas} Jemaah
+                         </div>
+                       )}
+                       {!hasSlug && (
+                         <div className="bg-red-600 text-white px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest shadow-lg">
+                            Data Belum Lengkap
+                         </div>
+                       )}
                     </div>
                   </Link>
 
-                  {/* NAVIGASI LANGSUNG KE MAPS */}
-                  <div className="pcm-card-footer">
-                    {masjid.locationUrl && (
-                      <a href={masjid.locationUrl} target="_blank" className="pcm-btn-maps-mini">
-                        <Navigation size={14} /> Petunjuk Lokasi
-                      </a>
-                    )}
+                  {/* Body Content */}
+                  <div className="p-8 flex-1 flex flex-col">
+                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3 group-hover:text-[#004a8e] transition-colors leading-tight">
+                      {masjid.name}
+                    </h3>
+                    <div className="flex items-start gap-2 text-slate-400 mb-8">
+                       <MapPin size={16} className="shrink-0 text-[#004a8e]" />
+                       <p className="text-xs font-bold leading-relaxed line-clamp-2 uppercase tracking-wide">{masjid.address}</p>
+                    </div>
+
+                    {/* Schedule Box (Modern Minimalist) */}
+                    <div className="mt-auto pt-6 border-t border-slate-50">
+                       <div className="flex items-center justify-between mb-4">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Jadwal Utama</span>
+                          <div className="h-[1px] flex-1 bg-slate-100 mx-4"></div>
+                       </div>
+                       
+                       {masjid.jadwalKajian && masjid.jadwalKajian.length > 0 ? (
+                         <div className="space-y-3">
+                           {masjid.jadwalKajian.slice(0, 2).map((kj: any) => (
+                             <div key={kj._id} className="flex items-center gap-3">
+                                <span className="bg-[#004a8e] text-white text-[9px] font-black px-2 py-1 rounded min-w-[55px] text-center uppercase tracking-tighter">
+                                   {kj.hari}
+                                </span>
+                                <span className="text-xs font-bold text-slate-600 truncate italic">
+                                   "{kj.tema || 'Kajian Rutin'}"
+                                </span>
+                             </div>
+                           ))}
+                         </div>
+                       ) : (
+                         <p className="text-[10px] font-bold text-slate-300 italic">Jadwal sedang diperbarui...</p>
+                       )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Footer Action */}
+                  <div className="px-8 pb-8 flex items-center justify-between">
+                     {masjid.locationUrl ? (
+                       <a href={masjid.locationUrl} target="_blank" className="flex items-center gap-2 text-[#004a8e] font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors">
+                          <Navigation size={14} className="text-[#ffc107]" /> Peta Navigasi
+                       </a>
+                     ) : <div />}
+                     
+                     <Link href={hasSlug ? `/masjid/${masjid.slug}` : '#'} className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#004a8e] group-hover:text-white transition-all">
+                        <ArrowRight size={18} />
+                     </Link>
+                  </div>
+                </article>
               );
             })}
           </div>
         ) : (
-          <div className="pcm-empty-radar">
-            <Home size={60} className="mx-auto mb-6 opacity-10" />
-            <p className="font-bold text-slate-400">Menyinkronkan Data Masjid & Mushola...</p>
+          <div className="py-32 text-center">
+            <Home size={64} className="mx-auto mb-6 text-slate-200" />
+            <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Menyinkronkan Basis Data Masjid...</p>
           </div>
         )}
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        :root { --p-blue: #004a8e; --p-gold: #ffc107; --p-slate: #1e293b; --p-soft: #f1f5f9; }
-        #pcm-masjid-modern-v3 { background: #fcfdfe; font-family: 'Plus Jakarta Sans', sans-serif; padding: 60px 0 120px; color: var(--p-slate); }
-        .pcm-container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
-
-        /* HERO */
-        .pcm-hero-header { text-align: center; margin-bottom: 60px; }
-        .pcm-badge-top { display: inline-block; padding: 6px 16px; background: #f0f7ff; color: var(--p-blue); border-radius: 100px; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
-        .pcm-hero-header h1 { font-size: clamp(32px, 5vw, 46px); font-weight: 900; color: #0f172a; tracking: -1.5px; margin-bottom: 15px; }
-        .pcm-glow-divider { width: 60px; height: 5px; background: var(--p-gold); margin: 30px auto; border-radius: 10px; }
-
-        /* UPDATE BANNER */
-        .pcm-banner-update { background: var(--p-blue); border-radius: 30px; padding: 30px 40px; margin-bottom: 80px; display: flex; justify-content: space-between; align-items: center; gap: 20px; color: #fff; box-shadow: 0 25px 50px -12px rgba(0,74,142,0.2); }
-        .info-content { display: flex; align-items: center; gap: 25px; }
-        .info-icon-wrapper { position: relative; }
-        .info-ping { position: absolute; inset: -5px; border: 2px solid var(--p-gold); border-radius: 50%; animation: pcm-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
-        @keyframes pcm-ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-        .info-text h4 { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
-        .info-text p { font-size: 14px; opacity: 0.7; }
-        .pcm-btn-update { background: #fff; color: var(--p-blue); padding: 14px 28px; border-radius: 18px; font-weight: 800; font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-        .pcm-btn-update:hover { background: var(--p-gold); transform: translateX(5px); }
-
-        /* GRID & CARDS */
-        .pcm-masjid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 40px; }
-        .pcm-masjid-card { background: #fff; border-radius: 35px; overflow: hidden; border: 1px solid #f1f5f9; display: flex; flex-direction: column; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
-        .pcm-masjid-card:hover { transform: translateY(-20px); box-shadow: 0 45px 90px -20px rgba(0,0,0,0.12); border-color: var(--p-blue); }
-        .pcm-card-main-link { text-decoration: none; color: inherit; display: block; flex-grow: 1; }
-
-        .pcm-card-visual { position: relative; width: 100%; padding-bottom: 65%; overflow: hidden; background: #f8fafc; }
-        .pcm-main-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: 1s ease; }
-        .pcm-masjid-card:hover .pcm-main-img { transform: scale(1.15); }
-        .pcm-visual-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,74,142,0.8), transparent); opacity: 0; transition: 0.4s; display: flex; align-items: flex-end; padding: 25px; }
-        .pcm-masjid-card:hover .pcm-visual-overlay { opacity: 1; }
-        .view-profile-label { color: #fff; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
-        .pending-badge { background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 5px; }
-        .pcm-capacity-tag { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: #fff; padding: 6px 14px; border-radius: 12px; font-size: 10px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-
-        .pcm-card-body { padding: 35px; }
-        .pcm-masjid-title { font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 10px; line-height: 1.2; }
-        .pcm-masjid-location { font-size: 13px; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 30px; }
-
-        .pcm-schedule-preview { background: #f8fafc; border-radius: 24px; padding: 20px; border: 1px solid #f1f5f9; }
-        .schedule-label { font-size: 10px; font-weight: 900; color: var(--p-blue); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
-        .mini-list { display: flex; flex-direction: column; gap: 10px; }
-        .mini-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-        .mini-item .day { font-weight: 900; color: var(--p-blue); background: #fff; padding: 3px 10px; border-radius: 8px; font-size: 11px; border: 1px solid #e2e8f0; min-width: 60px; text-align: center; }
-        .mini-item .topic { font-weight: 700; color: #334155; flex: 1; }
-        .more-tag { font-size: 11px; font-weight: 800; color: var(--p-gold); margin-top: 10px; display: block; font-style: italic; }
-
-        .pcm-card-footer { padding: 0 35px 35px; }
-        .pcm-btn-maps-mini { display: inline-flex; align-items: center; gap: 8px; color: var(--p-blue); font-weight: 800; font-size: 12px; text-transform: uppercase; text-decoration: none; padding: 10px 18px; border-radius: 12px; background: #f0f7ff; transition: 0.3s; }
-        .pcm-btn-maps-mini:hover { background: var(--p-blue); color: #fff; }
-
-        @media (max-width: 768px) { .pcm-banner-update { flex-direction: column; text-align: center; padding: 30px; } .pcm-masjid-grid { grid-template-columns: 1fr; } }
-      `}} />
+      {/* 4. FOOTER IDENTITAS */}
+      <footer className="mt-32 text-center">
+          <div className="flex items-center justify-center gap-4 text-slate-300 font-black text-[9px] uppercase tracking-[0.5em]">
+             <CheckCircle2 size={16} className="text-green-500/40" /> Portal Khidmat PCM Kembaran
+          </div>
+      </footer>
     </main>
   );
 }
