@@ -20,19 +20,29 @@ export default function KajianHariIniPage() {
     year: 'numeric'
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getKajianHariIni(today)
-        setKajianList(data)
-      } catch (error) {
-        console.error("Gagal mengambil jadwal:", error)
-      } finally {
-        setLoading(false)
-      }
+useEffect(() => {
+  async function fetchData() {
+    try {
+      // 1. Siapkan Amunisi Hari (Senin, Selasa, dst)
+      const days = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const now = new Date();
+      const todayDay = days[now.getDay()];
+
+      // 2. Siapkan Amunisi Tanggal (YYYY-MM-DD) untuk Kajian Insidental
+      const todayDate = now.toISOString().split('T')[0]; 
+
+      // 3. Panggil fungsi dengan DUA parameter (HARI & TANGGAL)
+      const data = await getKajianHariIni(todayDay, todayDate);
+      
+      setKajianList(data);
+    } catch (error) {
+      console.error("Gagal mengambil jadwal:", error);
+    } finally {
+      setLoading(false);
     }
-    fetchData()
-  }, [today])
+  }
+  fetchData();
+}, []);
 
   // 2. FUNGSI GENERATE GAMBAR
   const downloadFlyer = async (id: string, tema: string) => {
