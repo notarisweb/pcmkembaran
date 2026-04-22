@@ -54,7 +54,6 @@ export async function getArticlePosts() {
 
 /**
  * 4. Fungsi Dinamis Rubrik (Halaman Kategori)
- * Ditambah: downloadLink & fileSize agar bisa muncul indikator di list kategori
  */
 export async function getPostsByCategory(categoryName: string) {
   return client.fetch(
@@ -76,7 +75,6 @@ export async function getPostsByCategory(categoryName: string) {
 
 /**
  * 5. Detail Konten (Halaman Baca)
- * KRUSIAL: Menambahkan downloadLink & fileSize agar tombol download muncul!
  */
 export async function getSinglePost(slug: string) {
   if (!slug) return null;
@@ -171,4 +169,25 @@ export async function getSearchedPosts(searchQuery: string) {
     console.error("Gagal melakukan pencarian:", error);
     return [];
   }
+}
+
+/**
+ * 10. Ambil Jadwal Kajian Hari Ini (UNTUK FLYER GENERATOR)
+ * Menghubungkan data Jadwal dengan data Masjid (Reference)
+ */
+export async function getKajianHariIni(hari: string) {
+  return client.fetch(
+    groq`*[_type == "jadwalKajian" && hari == $hari] {
+      _id,
+      hari,
+      ustadz,
+      waktu,
+      tema,
+      keterangan,
+      "namaMasjid": masjid->name,
+      "alamatMasjid": masjid->address,
+      "logoMasjid": masjid->logo.asset->url
+    }`,
+    { hari }
+  );
 }

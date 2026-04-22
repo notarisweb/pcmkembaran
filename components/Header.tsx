@@ -3,15 +3,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; 
 import Image from "next/image";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase"; // Pastikan path ini benar
+import { supabase } from "@/lib/supabase";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
   const [searchQuery, setSearchQuery] = useState(""); 
-  const [user, setUser] = useState<any>(null); // State untuk pantau user
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
-  // 1. LOGIKA AUTH (Pantau Status Login)
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -33,13 +32,11 @@ export default function Header() {
     }
   };
 
-  // Fungsi Tombol Dinamis
   const handleAuthAction = async () => {
     if (user) {
       await supabase.auth.signOut();
       router.refresh();
     } else {
-      // Jika belum login, arahkan ke studio atau biarkan scroll ke komentar
       window.open("https://pcmkembaran.com/studio", "_blank");
     }
   };
@@ -56,6 +53,7 @@ export default function Header() {
     { name: "Unduhan", slug: "unduhan" },
   ];
 
+  // TAMBAHKAN MENU KAJIAN HARI INI DI BARIS TERAKHIR
   const lapis4Menus = [
     { name: "Profile", slug: "profile" },
     { name: "Struktur Pimpinan", slug: "pimpinan" },
@@ -65,6 +63,7 @@ export default function Header() {
     { name: "Download", slug: "download" },
     { name: "Gallery", slug: "galeri" },
     { name: "Kontak", slug: "kontak" },
+    { name: "Kajian Hari Ini", slug: "kajian-hari-ini" }, // <-- AMUNISI BARU
   ];
 
   const orgMenus = [
@@ -72,6 +71,7 @@ export default function Header() {
     { name: "Majelis & Lembaga", slug: "lembaga" },
     { name: "Data Ranting (PRM)", slug: "ranting" },
     { name: "Daftar Masjid", slug: "masjid" },
+    { name: "Kajian Hari Ini", slug: "kajian-hari-ini" },
     { name: "Galeri Kegiatan", slug: "galeri" },
     { name: "Kontak", slug: "kontak" },
   ];
@@ -84,8 +84,25 @@ export default function Header() {
         .nav-link-item:hover { background-color: var(--abah-gold) !important; color: #000000 !important; }
         .nav-menu-list::-webkit-scrollbar, .lapis4-list::-webkit-scrollbar { display: none; }
         .nav-menu-list, .lapis4-list { -ms-overflow-style: none; scrollbar-width: none; }
-        .lapis4-link { color: #444 !important; text-decoration: none; font-weight: 700; font-size: 11px; padding: 10px 15px; display: block; white-space: nowrap; transition: 0.2s; }
+        .lapis4-link { color: #444 !important; text-decoration: none; font-weight: 700; font-size: 11px; padding: 10px 15px; display: flex; align-items: center; white-space: nowrap; transition: 0.2s; }
         .lapis4-link:hover { color: var(--abah-blue) !important; }
+        
+        /* 🔴 ANIMASI SINYAL KELIP MERAH */
+        @keyframes pulse-red {
+          0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+          70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+          100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .signal-indicator {
+          width: 8px;
+          height: 8px;
+          background-color: #ef4444;
+          border-radius: 50%;
+          margin-right: 8px;
+          display: inline-block;
+          animation: pulse-red 2s infinite;
+        }
+
         @media (max-width: 992px) { .top-center-search { display: none !important; } }
         
         .auth-btn {
@@ -122,8 +139,6 @@ export default function Header() {
 
           <div className="top-right-group" style={{ flex: 1, display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <Link href="https://sociabuzz.com/pcmkembaran/tribe" style={{ backgroundColor: 'var(--abah-blue)', color: '#ffffff', padding: '6px 15px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', textDecoration: 'none', textTransform: 'uppercase' }}>DONASI</Link>
-            
-            {/* TOMBOL DINAMIS: MASUK / KELUAR */}
             <button 
               onClick={handleAuthAction}
               className="auth-btn"
@@ -144,7 +159,10 @@ export default function Header() {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {orgMenus.map((m) => (
             <li key={m.slug} style={{ marginBottom: '15px' }}>
-              <Link href={`/${m.slug}`} onClick={() => setIsMenuOpen(false)} style={{ textDecoration: 'none', color: '#444', fontWeight: '700', fontSize: '14px' }}>{m.name}</Link>
+              <Link href={`/${m.slug}`} onClick={() => setIsMenuOpen(false)} style={{ textDecoration: 'none', color: '#444', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center' }}>
+                {m.slug === "kajian-hari-ini" && <span className="signal-indicator"></span>}
+                {m.name}
+              </Link>
             </li>
           ))}
         </ul>
@@ -188,7 +206,10 @@ export default function Header() {
             <ul className="lapis4-list" style={{ display: 'flex', listStyle: 'none', padding: 0, margin: 0, overflowX: 'auto' }}>
               {lapis4Menus.map((m, index) => (
                 <li key={m.slug} style={{ display: 'flex', alignItems: 'center' }}>
-                  <Link href={`/${m.slug}`} className="lapis4-link">{m.name.toUpperCase()}</Link>
+                  <Link href={`/${m.slug}`} className="lapis4-link">
+                    {m.slug === "kajian-hari-ini" && <span className="signal-indicator"></span>}
+                    {m.name.toUpperCase()}
+                  </Link>
                   {index < lapis4Menus.length - 1 && <span style={{ color: '#ccc', fontSize: '10px' }}>|</span>}
                 </li>
               ))}

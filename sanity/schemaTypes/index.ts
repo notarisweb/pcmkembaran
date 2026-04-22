@@ -7,8 +7,9 @@ import masjid from './masjid'
 import profile from './profile'
 import pimpinan from './pimpinan' 
 import installations from './installations' 
-// 1. Impor skema youtube yang baru kita buat
-import youtube from './youtube' // <-- TAMBAHKAN BARIS INI
+import youtube from './youtube'
+// 1. Impor skema jadwalKajian yang baru
+import jadwalKajian from './jadwalKajian' // <-- TAMBAHKAN INI
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -20,8 +21,9 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     gallery,       // Galeri Foto
     download,      // File Download
     installations, // Registrasi data aplikasi
+    youtube,       // Objek Youtube
     
-    // 2. Registrasi objek youtube agar aktif di editor
-    youtube,       // <-- TAMBAHKAN DI SINI
+    // 2. Registrasi skema Jadwal Kajian agar aktif
+    jadwalKajian,  // <-- TAMBAHKAN DI SINI
   ],
 }
