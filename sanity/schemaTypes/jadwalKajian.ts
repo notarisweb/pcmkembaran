@@ -3,84 +3,64 @@ import { CalendarIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'jadwalKajian',
-  title: 'Jadwal Kajian Rutin',
+  title: 'Pusat Jadwal Kajian',
   type: 'document',
   icon: CalendarIcon,
-  groups: [
-    { name: 'utama', title: 'Info Kajian' },
-    { name: 'lokasi', title: 'Lokasi & Waktu' },
-  ],
   fields: [
     defineField({
-      name: 'masjid',
-      title: 'Pilih Masjid',
-      type: 'reference',
-      to: [{ type: 'masjid' }],
-      group: 'lokasi',
-      validation: (Rule) => Rule.required().error('Masjid harus dipilih untuk lokasi kajian.'),
+      name: 'tipe',
+      title: 'Tipe Kajian',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Rutin (Mingguan)', value: 'rutin' },
+          { title: 'Insidental (Tabligh Akbar/Selapanan)', value: 'insidental' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'rutin',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'hari',
-      title: 'Hari Kajian',
+      title: 'Hari Kajian (Untuk Rutin)',
       type: 'string',
-      group: 'utama',
       options: {
-        list: [
-          { title: 'Senin', value: 'Senin' },
-          { title: 'Selasa', value: 'Selasa' },
-          { title: 'Rabu', value: 'Rabu' },
-          { title: 'Kamis', value: 'Kamis' },
-          { title: 'Jumat', value: 'Jumat' },
-          { title: 'Sabtu', value: 'Sabtu' },
-          { title: 'Ahad', value: 'Ahad' },
-        ],
-        layout: 'dropdown',
+        list: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'],
       },
+      hidden: ({ document }) => document?.tipe !== 'rutin', // Sembunyi jika bukan rutin
+    }),
+    defineField({
+      name: 'tanggal',
+      title: 'Tanggal Pelaksanaan (Untuk Insidental)',
+      type: 'date',
+      hidden: ({ document }) => document?.tipe !== 'insidental', // Sembunyi jika bukan insidental
+    }),
+    // ... field lainnya tetap sama (masjid, ustadz, waktu, tema, dll)
+    defineField({
+      name: 'masjid',
+      title: 'Lokasi Masjid',
+      type: 'reference',
+      to: [{ type: 'masjid' }],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'ustadz',
-      title: 'Nama Ustadz / Pembimbing',
+      title: 'Ustadz / Pemateri',
       type: 'string',
-      group: 'utama',
-      placeholder: 'Contoh: Ustadz Fulan bin Fulan',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'waktu',
-      title: 'Waktu Kajian',
+      title: 'Waktu (Contoh: 08.00 - Selesai)',
       type: 'string',
-      group: 'lokasi',
-      placeholder: 'Contoh: Ba\'da Maghrib - Selesai',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'tema',
-      title: 'Tema / Nama Kitab',
+      title: 'Tema Kajian',
       type: 'string',
-      group: 'utama',
-      placeholder: 'Contoh: Kitab Riyadhus Shalihin',
-    }),
-    defineField({
-      name: 'keterangan',
-      title: 'Keterangan Tambahan',
-      type: 'text',
-      group: 'utama',
-      description: 'Misal: Khusus Muslimah, atau Terbuka untuk Umum',
+      validation: (Rule) => Rule.required(),
     }),
   ],
-  preview: {
-    select: {
-      title: 'tema',
-      subtitle: 'hari',
-      ustadz: 'ustadz',
-      masjid: 'masjid.name',
-    },
-    prepare({ title, subtitle, ustadz, masjid }) {
-      return {
-        title: title || `Kajian Bersama ${ustadz}`,
-        subtitle: `${subtitle} | ${masjid || 'Masjid Belum Dipilih'}`,
-      }
-    },
-  },
 })
