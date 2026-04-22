@@ -1,17 +1,41 @@
 import { defineType, defineField } from 'sanity'
-import { CalendarIcon } from '@sanity/icons'
+import { CalendarIcon, ImageIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'jadwalKajian',
   title: 'Pusat Jadwal Kajian',
   type: 'document',
   icon: CalendarIcon,
-  // Mengelompokkan field agar UI tidak terlalu panjang ke bawah
+  // Mengelompokkan field agar UI rapi dan intuitif
   groups: [
     { name: 'waktu', title: 'Konfigurasi Waktu' },
     { name: 'detail', title: 'Detail Kajian' },
+    { name: 'meta', title: 'Media & Publikasi' },
   ],
   fields: [
+    /* --- 1. IDENTITAS UTAMA --- */
+    defineField({
+      name: 'tema',
+      title: 'Tema Kajian (Judul)',
+      type: 'string',
+      group: 'detail',
+      placeholder: 'Contoh: Hati Yang Terbelenggu',
+      validation: (Rule) => Rule.required().error('Tema wajib diisi untuk judul postingan.'),
+    }),
+
+    defineField({
+      name: 'slug',
+      title: 'Slug (URL)',
+      type: 'slug',
+      group: 'meta',
+      options: { 
+        source: 'tema', 
+        maxLength: 96 
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+
+    /* --- 2. PENGATURAN WAKTU & TIPE --- */
     defineField({
       name: 'tipe',
       title: 'Tipe Kajian',
@@ -28,7 +52,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
 
-    /* --- KHUSUS RUTIN --- */
     defineField({
       name: 'hari',
       title: 'Hari Kajian',
@@ -39,10 +62,11 @@ export default defineType({
       },
       hidden: ({ document }) => document?.tipe !== 'rutin',
     }),
+
     defineField({
       name: 'pekan',
       title: 'Pekan Ke-',
-      description: 'Pilih pekan ke berapa kajian diadakan. KOSONGKAN jika diadakan SETIAP PEKAN.',
+      description: 'Kosongkan jika SETIAP PEKAN. Pilih angka untuk ustadz bergilir.',
       type: 'array',
       group: 'waktu',
       of: [{ type: 'string' }],
@@ -59,17 +83,24 @@ export default defineType({
       hidden: ({ document }) => document?.tipe !== 'rutin',
     }),
 
-    /* --- KHUSUS INSIDENTAL --- */
     defineField({
       name: 'tanggal',
       title: 'Tanggal Pelaksanaan',
       type: 'date',
       group: 'waktu',
-      description: 'Hanya untuk pengajian sekali jalan (Tabligh Akbar).',
+      description: 'Khusus untuk Tabligh Akbar / Acara Sekali Jalan.',
       hidden: ({ document }) => document?.tipe !== 'insidental',
     }),
 
-    /* --- DETAIL KAJIAN (Muncul di semua tipe) --- */
+    /* --- 3. DETAIL PEMATERI & LOKASI --- */
+    defineField({
+      name: 'ustadz',
+      title: 'Ustadz / Pemateri',
+      type: 'string',
+      group: 'detail',
+      validation: (Rule) => Rule.required(),
+    }),
+
     defineField({
       name: 'masjid',
       title: 'Lokasi Masjid',
@@ -78,37 +109,73 @@ export default defineType({
       to: [{ type: 'masjid' }],
       validation: (Rule) => Rule.required(),
     }),
-    defineField({
-      name: 'ustadz',
-      title: 'Ustadz / Pemateri',
-      type: 'string',
-      group: 'detail',
-      placeholder: 'Contoh: Ustadz Fulan, Lc.',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'tema',
-      title: 'Tema Kajian',
-      type: 'string',
-      group: 'detail',
-      placeholder: 'Contoh: Kitab Riyadhus Shalihin',
-      validation: (Rule) => Rule.required(),
-    }),
+
     defineField({
       name: 'waktu',
       title: 'Waktu / Jam',
       type: 'string',
       group: 'detail',
-      placeholder: 'Contoh: Ba\'da Maghrib - Selesai',
+      placeholder: 'Ba\'da Maghrib - Selesai',
       validation: (Rule) => Rule.required(),
     }),
+
+    /* --- 4. MEDIA (DUAL-MODE FLYER) --- */
+    defineField({
+      name: 'flyerImage',
+      title: 'Upload Flyer Resmi (Custom)',
+      type: 'image',
+      group: 'meta',
+      description: 'Jika ada flyer desain sendiri, upload di sini. Ini akan menggantikan flyer otomatis.',
+      options: { hotspot: true },
+    }),
+
+    defineField({
+      name: 'mainImage',
+      title: 'Thumbnail / Cover Berita',
+      type: 'image',
+      group: 'meta',
+      description: 'Gambar ini muncul di daftar berita homepage jika Flyer Resmi kosong.',
+      options: { hotspot: true },
+    }),
+
+    defineField({
+      name: 'publishedAt',
+      title: 'Tanggal Publikasi',
+      type: 'datetime',
+      group: 'meta',
+      initialValue: () => (new Date()).toISOString(),
+    }),
+
     defineField({
       name: 'keterangan',
       title: 'Keterangan Tambahan',
       type: 'text',
       group: 'detail',
       rows: 3,
-      placeholder: 'Contoh: Khusus Ikhwan / Umum',
     }),
   ],
+
+  /* --- 🚀 PREVIEW LOGIC (SINKRONISASI SIDEBAR) --- */
+  preview: {
+    select: {
+      title: 'tema',
+      ustadz: 'ustadz',
+      tipe: 'tipe',
+      hari: 'hari',
+      tanggal: 'tanggal',
+      flyer: 'flyerImage',
+      thumb: 'mainImage'
+    },
+    prepare(selection) {
+      const { title, ustadz, tipe, hari, tanggal, flyer, thumb } = selection
+      const detailWaktu = tipe === 'rutin' ? `Rutin: ${hari}` : `Insidental: ${tanggal}`
+      
+      return {
+        title: title || 'Untitled Tema',
+        subtitle: `${ustadz} | ${detailWaktu}`,
+        // Menampilkan thumbnail flyer di sidebar jika ada
+        media: flyer || thumb || CalendarIcon
+      }
+    }
+  }
 })

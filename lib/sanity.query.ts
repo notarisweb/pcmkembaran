@@ -2,17 +2,18 @@ import { client } from "./sanity.client";
 import { groq } from "next-sanity";
 
 /**
- * 1. Ambil SEMUA postingan terbaru (Untuk Homepage)
+ * 1. Ambil SEMUA postingan terbaru + Jadwal Kajian (Homepage)
+ * Memprioritaskan Flyer yang di-upload sebagai thumbnail utama.
  */
 export async function getAllPosts() {
   return client.fetch(
-    groq`*[_type == "post"] | order(publishedAt desc)[0...10] {
+    groq`*[_type in ["post", "jadwalKajian"]] | order(publishedAt desc)[0...10] {
       _id,
-      title,
+      "title": coalesce(title, tema), 
       "slug": slug.current,
-      "image": mainImage.asset->url,
+      "image": coalesce(flyerImage.asset->url, mainImage.asset->url), // Prioritas Flyer -> MainImage
       "publishedAt": publishedAt,
-      "category": coalesce(category, categories[0]->title, "Umum"),
+      "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0)
     }`
   );
@@ -57,13 +58,13 @@ export async function getArticlePosts() {
  */
 export async function getPostsByCategory(categoryName: string) {
   return client.fetch(
-    groq`*[_type == "post" && (category match $categoryName || categories[0]->title match $categoryName)] | order(publishedAt desc) {
+    groq`*[(_type == "post" || _type == "jadwalKajian") && (category match $categoryName || categories[0]->title match $categoryName || "Jadwal Kajian" match $categoryName)] | order(publishedAt desc) {
       _id,
-      title,
+      "title": coalesce(title, tema),
       "slug": slug.current,
-      "image": mainImage.asset->url,
+      "image": coalesce(flyerImage.asset->url, mainImage.asset->url),
       "publishedAt": publishedAt,
-      "category": coalesce(category, categories[0]->title, $categoryName),
+      "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0),
       "downloadLink": downloadLink,
       "fileSize": fileSize,
@@ -79,18 +80,23 @@ export async function getPostsByCategory(categoryName: string) {
 export async function getSinglePost(slug: string) {
   if (!slug) return null;
   return client.fetch(
-    groq`*[_type == "post" && slug.current == $slug][0] {
+    groq`*[_type in ["post", "jadwalKajian"] && slug.current == $slug][0] {
       _id,
-      title,
+      "title": coalesce(title, tema),
       "slug": slug.current,
-      "image": mainImage.asset->url,
+      "image": coalesce(flyerImage.asset->url, mainImage.asset->url),
       publishedAt,
-      "category": coalesce(category, categories[0]->title, "Umum"),
+      "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0),
       "downloadLink": downloadLink,
       "fileSize": fileSize,
       body,
-      "author": author->name
+      "author": author->name,
+      ustadz,
+      waktu,
+      keterangan,
+      "namaMasjid": masjid->name,
+      "alamatMasjid": masjid->address
     }`,
     { slug }
   );
@@ -118,13 +124,13 @@ export async function getKhutbahPosts() {
  */
 export async function getRelatedPosts(category: string, currentSlug: string) {
   return client.fetch(
-    groq`*[_type == "post" && (category match $category || categories[0]->title match $category) && slug.current != $currentSlug] | order(publishedAt desc) [0...8] {
+    groq`*[_type in ["post", "jadwalKajian"] && (category match $category || categories[0]->title match $category || "Jadwal Kajian" match $category) && slug.current != $currentSlug] | order(publishedAt desc) [0...8] {
       _id,
-      title,
+      "title": coalesce(title, tema),
       "slug": slug.current,
-      "image": mainImage.asset->url,
+      "image": coalesce(flyerImage.asset->url, mainImage.asset->url),
       "publishedAt": publishedAt,
-      "category": coalesce(category, categories[0]->title, $category),
+      "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0)
     }`,
     { category, currentSlug }
@@ -136,12 +142,12 @@ export async function getRelatedPosts(category: string, currentSlug: string) {
  */
 export async function getPopularPosts() {
   return client.fetch(
-    groq`*[_type == "post"] | order(views desc)[0...5] {
+    groq`*[_type in ["post", "jadwalKajian"]] | order(views desc)[0...5] {
       _id,
-      title,
+      "title": coalesce(title, tema),
       "slug": slug.current,
       "publishedAt": publishedAt,
-      "category": coalesce(category, categories[0]->title, "Berita"),
+      "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0)
     }`
   );
@@ -154,12 +160,12 @@ export async function getSearchedPosts(searchQuery: string) {
   if (!searchQuery) return [];
   try {
     return await client.fetch(
-      groq`*[_type == "post" && (title match $searchQuery || pt::text(body) match $searchQuery)] | order(publishedAt desc) {
+      groq`*[_type in ["post", "jadwalKajian"] && (title match $searchQuery || tema match $searchQuery || pt::text(body) match $searchQuery)] | order(publishedAt desc) {
         _id,
-        title,
+        "title": coalesce(title, tema),
         "slug": slug.current,
-        "image": mainImage.asset->url,
-        "category": coalesce(category, categories[0]->title, "Umum"),
+        "image": coalesce(flyerImage.asset->url, mainImage.asset->url),
+        "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
         "publishedAt": publishedAt,
         "views": coalesce(views, 0)
       }`,
@@ -172,11 +178,7 @@ export async function getSearchedPosts(searchQuery: string) {
 }
 
 /**
- * 10. Ambil Jadwal Kajian Hari Ini (ULTRA UPGRADE)
- * Mendukung: 
- * - Kajian Insidental (Tanggal)
- * - Kajian Rutin (Hari) 
- * - Kajian Bergilir (Hari + Pekan Ke-n)
+ * 10. Ambil Jadwal Kajian Hari Ini (Untuk Flyer & Dual-Mode)
  */
 export async function getKajianHariIni(hari: string, tanggal: string, pekanKe: string) {
   return client.fetch(
@@ -195,7 +197,8 @@ export async function getKajianHariIni(hari: string, tanggal: string, pekanKe: s
       keterangan,
       "namaMasjid": masjid->name,
       "alamatMasjid": masjid->address,
-      "logoMasjid": masjid->logo.asset->url
+      "logoMasjid": masjid->logo.asset->url,
+      "flyerImageUrl": flyerImage.asset->url // AMUNISI FLYER UPLOAD-AN
     }`,
     { hari, tanggal, pekanKe }
   );
