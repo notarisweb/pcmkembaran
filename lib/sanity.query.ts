@@ -2,18 +2,15 @@ import { client } from "./sanity.client";
 import { groq } from "next-sanity";
 
 /**
- * Snippet Reusable untuk Image agar mendukung SEO (Alt & Caption)
+ * Snippet Reusable - Kalibrasi Gambar (Anti-Hilang)
+ * Mengambil flyerImage jika mainImage kosong, dan sebaliknya.
  */
 const imageFields = groq`
-  "image": mainImage.asset->url,
-  "imageAlt": mainImage.alt,
-  "imageCaption": mainImage.caption,
-  "flyerImage": flyerImage.asset->url
+  "image": coalesce(mainImage.asset->url, flyerImage.asset->url),
+  "imageAlt": coalesce(mainImage.alt, flyerImage.alt, title, tema, "Gambar PCM Kembaran"),
+  "imageCaption": coalesce(mainImage.caption, flyerImage.caption)
 `;
 
-/**
- * 1. Homepage: Ambil SEMUA postingan terbaru + Jadwal Kajian
- */
 export async function getAllPosts() {
   return client.fetch(
     groq`*[_type in ["post", "jadwalKajian"]] | order(publishedAt desc)[0...10] {
@@ -34,9 +31,6 @@ export async function getAllPosts() {
   );
 }
 
-/**
- * 2. Ambil Berita Terbaru
- */
 export async function getNewsPosts() {
   return client.fetch(
     groq`*[_type == "post" && (category match "berita" || categories[0]->title match "Berita")] | order(publishedAt desc)[0...6] {
@@ -53,9 +47,6 @@ export async function getNewsPosts() {
   );
 }
 
-/**
- * 3. Ambil Artikel Terbaru
- */
 export async function getArticlePosts() {
   return client.fetch(
     groq`*[_type == "post" && (category match "artikel" || categories[0]->title match "Artikel")] | order(publishedAt desc)[0...5] {
@@ -72,9 +63,6 @@ export async function getArticlePosts() {
   );
 }
 
-/**
- * 4. Fungsi Dinamis Rubrik (Halaman Kategori)
- */
 export async function getPostsByCategory(categoryName: string) {
   return client.fetch(
     groq`*[(_type == "post" || _type == "jadwalKajian") && (category match $categoryName || categories[0]->title match $categoryName || "Jadwal Kajian" match $categoryName)] | order(publishedAt desc) {
@@ -99,9 +87,6 @@ export async function getPostsByCategory(categoryName: string) {
   );
 }
 
-/**
- * 5. Detail Konten (Halaman Baca) - DUKUNGAN SEO & TABLIGH AKBAR
- */
 export async function getSinglePost(slug: string) {
   if (!slug) return null;
   return client.fetch(
@@ -118,26 +103,13 @@ export async function getSinglePost(slug: string) {
       publishedAt,
       "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
       "views": coalesce(views, 0),
-      
-      // Fields khusus Unduhan
       "downloadLink": downloadLink,
       "fileSize": fileSize,
-      
-      // Fields khusus Tabligh Akbar
       eventTheme,
       eventDate,
       eventLocation,
       eventSpeaker,
-
-      // Body Content (Mendukung Alt/Caption di dalam Portable Text)
-      body[] {
-        ...,
-        _type == "image" => {
-          ...,
-          asset->
-        }
-      },
-      
+      body, // Kembali ke default agar rendering PortableText tidak pecah
       "author": author->name,
       ustadz,
       waktu,
@@ -150,9 +122,6 @@ export async function getSinglePost(slug: string) {
   );
 }
 
-/**
- * 6. Ambil Naskah Khutbah
- */
 export async function getKhutbahPosts() {
   return client.fetch(
     groq`*[_type == "post" && (category match "khutbah" || categories[0]->title match "Khutbah")] | order(publishedAt desc)[0...5] {
@@ -169,9 +138,6 @@ export async function getKhutbahPosts() {
   );
 }
 
-/**
- * 7. Postingan Terkait
- */
 export async function getRelatedPosts(category: string, currentSlug: string) {
   return client.fetch(
     groq`*[_type in ["post", "jadwalKajian"] && (category match $category || categories[0]->title match $category || "Jadwal Kajian" match $category) && slug.current != $currentSlug] | order(publishedAt desc) [0...8] {
@@ -191,9 +157,6 @@ export async function getRelatedPosts(category: string, currentSlug: string) {
   );
 }
 
-/**
- * 8. Postingan Terpopuler
- */
 export async function getPopularPosts() {
   return client.fetch(
     groq`*[_type in ["post", "jadwalKajian"]] | order(views desc)[0...5] {
@@ -209,9 +172,6 @@ export async function getPopularPosts() {
   );
 }
 
-/**
- * 9. Pencarian Global
- */
 export async function getSearchedPosts(searchQuery: string) {
   if (!searchQuery) return [];
   try {
@@ -237,9 +197,6 @@ export async function getSearchedPosts(searchQuery: string) {
   }
 }
 
-/**
- * 10. Jadwal Kajian Hari Ini
- */
 export async function getKajianHariIni(hari: string, tanggal: string, pekanKe: string) {
   return client.fetch(
     groq`*[_type == "jadwalKajian" && (
