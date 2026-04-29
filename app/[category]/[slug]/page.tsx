@@ -83,11 +83,12 @@ export default async function PostDetail({
             </div>
           )}
 
+          {/* KONTEN ARTIKEL - DENGAN FIX LIST/NOMOR */}
           <div className="article-content">
             {post.body && <PortableTextContent value={post.body} />}
           </div>
 
-          {/* DOWNLOAD SECTION */}
+          {/* SEKTOR DOWNLOAD */}
           {category === 'unduhan' && post.downloadLink && (
             <section className="download-box-tactical">
               <div className="download-info">
@@ -126,7 +127,6 @@ export default async function PostDetail({
         {/* ================= SISI KANAN: SIDEBAR ================= */}
         <aside className="sidebar">
           <div className="sticky-sidebar">
-            {/* SOSIAL MEDIA */}
             <div className="sidebar-widget">
               <h3 className="widget-title gold">IKUTI KAMI</h3>
               <div className="social-flex">
@@ -138,7 +138,6 @@ export default async function PostDetail({
               </div>
             </div>
 
-            {/* TERPOPULER - EFEK GLOW RESTORED */}
             <div className="sidebar-widget">
               <h3 className="widget-title blue">TERPOPULER</h3>
               <div className="popular-wrapper">
@@ -164,7 +163,7 @@ export default async function PostDetail({
         
         .post-detail-main { max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* BREADCRUMB - RESPONSIVE FIX */
+        /* BREADCRUMB */
         .breadcrumb { font-size: 13px; color: var(--text-slate); margin-bottom: 30px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .breadcrumb-cat { color: var(--abah-blue); font-weight: 800; text-transform: uppercase; text-decoration: none; }
         .breadcrumb-title { color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
@@ -172,7 +171,7 @@ export default async function PostDetail({
         /* GRID SYSTEM */
         .main-grid-layout { display: grid; grid-template-columns: 1fr 340px; gap: 50px; align-items: flex-start; }
 
-        /* CONTENT */
+        /* CONTENT & TYPOGRAPHY */
         .main-title { font-size: clamp(26px, 4vw, 44px); font-weight: 900; line-height: 1.2; color: var(--text-dark); margin-bottom: 25px; letter-spacing: -0.02em; }
         .meta-bar { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 35px; flex-wrap: wrap; gap: 20px; }
         .author-box { display: flex; align-items: center; gap: 14px; }
@@ -183,8 +182,14 @@ export default async function PostDetail({
         .views-count { color: var(--abah-blue); font-weight: 800; }
 
         .featured-img-container { position: relative; width: 100%; aspect-ratio: 16/9; max-height: 550px; border-radius: 24px; overflow: hidden; margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); background: #f1f5f9; }
+        
+        /* 🛡️ FIX NOMOR LIST & BULLET POINT (image_97e4a0) 🛡️ */
         .article-content { font-size: 19px; line-height: 1.85; color: #334155; }
         .article-content p { margin-bottom: 1.8rem; }
+        .article-content ol { list-style-type: decimal !important; margin-left: 1.5rem !important; margin-bottom: 1.5rem; padding-left: 1rem; }
+        .article-content ul { list-style-type: disc !important; margin-left: 1.5rem !important; margin-bottom: 1.5rem; padding-left: 1rem; }
+        .article-content li { margin-bottom: 0.8rem; padding-left: 0.5rem; }
+        .article-content li::marker { color: var(--abah-blue); font-weight: bold; }
 
         /* SIDEBAR & STICKY */
         .sidebar { height: 100%; min-width: 340px; }
