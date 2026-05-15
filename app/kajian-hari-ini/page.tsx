@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { getKajianHariIni, getAllPosts } from '@/lib/sanity.query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Download, Calendar, Clock, MapPin, User, Share2, Info, 
-  ChevronRight, ArrowRight, Maximize2, X, CalendarDays, 
-  Landmark, CheckCircle2 
+  Download, Calendar, Clock, MapPin, Share2, ArrowRight, Maximize2, X, CalendarDays, Landmark, CheckCircle2, Info 
 } from 'lucide-react'
 
 export default function KajianHariIniPage() {
@@ -21,9 +19,7 @@ export default function KajianHariIniPage() {
   const today = days[now.getDay()]
   
   const currentDate = now.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+    day: 'numeric', month: 'long', year: 'numeric'
   });
 
   const getWeekOfMonth = (date: Date) => {
@@ -45,7 +41,8 @@ export default function KajianHariIniPage() {
 
         const allData = await getAllPosts();
         const filteredUpcoming = allData.filter((item: any) => 
-          item.category === "Jadwal Kajian" && !dataHariIni.some(h => h._id === item._id)
+          (item.category === "Jadwal Kajian" || item._type === "jadwalKajian") && 
+          !dataHariIni.some(h => h._id === item._id)
         ).slice(0, 4);
         
         setUpcomingKajian(filteredUpcoming);
@@ -112,6 +109,8 @@ export default function KajianHariIniPage() {
             <div className="grid grid-cols-1 gap-12">
               {kajianList.map((kajian) => {
                 const isIncidental = kajian.tipe === 'insidental';
+                const postSlug = kajian.slug || 'detail'; // 🛡️ FALLBACK SLUG
+
                 return (
                   <div key={kajian._id} className="group bg-white rounded-[2.5rem] border border-slate-100 flex flex-col lg:flex-row p-6 md:p-8 gap-8 md:gap-12 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
                     <div className="w-full lg:w-[220px] flex flex-col gap-5 shrink-0">
@@ -169,11 +168,10 @@ export default function KajianHariIniPage() {
                              </div>
                           </div>
                           <div className="flex gap-3">
-                             {/* 🛡️ FIX: Link sekarang memanggil kajian.slug yang sudah ditarik dari query */}
-                             <Link href={`/jadwal-kajian/${kajian.slug}`} className="flex-1 flex items-center justify-center gap-2 bg-[#004a8e] text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl">
+                             <Link href={`/jadwal-kajian/${postSlug}`} className="flex-1 flex items-center justify-center gap-2 bg-[#004a8e] text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl">
                                 Detail <ArrowRight size={14} />
                              </Link>
-                             <a href={`https://wa.me/?text=Mari hadir di *KAJIAN ${today.toUpperCase()}*%0A%0A*Tema:* ${kajian.tema}%0A*Lokasi:* ${kajian.namaMasjid}%0A%0AInfo Selengkapnya: https://pcmkembaran.com/jadwal-kajian/${kajian.slug}`} target="_blank" className="w-14 flex items-center justify-center bg-[#25D366] text-white rounded-xl shadow-lg hover:brightness-110 transition-all">
+                             <a href={`https://wa.me/?text=Mari hadir di *KAJIAN ${today.toUpperCase()}*%0A%0A*Tema:* ${kajian.tema}%0A*Lokasi:* ${kajian.namaMasjid}%0A%0AInfo Selengkapnya: https://pcmkembaran.com/jadwal-kajian/${postSlug}`} target="_blank" className="w-14 flex items-center justify-center bg-[#25D366] text-white rounded-xl shadow-lg hover:brightness-110 transition-all">
                                 <Share2 size={20} />
                              </a>
                           </div>
@@ -198,7 +196,7 @@ export default function KajianHariIniPage() {
            </div>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {upcomingKajian.map((item) => (
-                <Link href={`/jadwal-kajian/${item.slug}`} key={item._id} className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all flex items-center gap-6">
+                <Link href={`/jadwal-kajian/${item.slug || 'detail'}`} key={item._id} className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all flex items-center gap-6">
                    <div className="w-16 h-16 shrink-0 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-[#004a8e] group-hover:bg-[#004a8e] group-hover:text-white transition-all">
                       <CalendarDays size={24} />
                    </div>
