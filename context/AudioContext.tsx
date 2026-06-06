@@ -6,6 +6,7 @@ import {
   useRef,
   useEffect,
   useState,
+  ReactNode,
 } from 'react'
 
 import { useAudioStore } from '@/store/useAudioStore'
@@ -21,7 +22,7 @@ type AudioContextType = {
   playlist: Track[]
   currentTrackIndex: number
   setCurrentTrackIndex: React.Dispatch<React.SetStateAction<number>>
-  audioRef: React.RefObject<HTMLAudioElement>
+  audioRef: React.RefObject<HTMLAudioElement | null>
 }
 
 const AudioContext = createContext<AudioContextType | null>(null)
@@ -29,7 +30,7 @@ const AudioContext = createContext<AudioContextType | null>(null)
 export function AudioProvider({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -80,6 +81,7 @@ export function AudioProvider({
     if (!audio) return
 
     audio.src = playlist[currentTrackIndex].src
+    audio.load()
 
     const handleEnded = () => {
       setCurrentTrackIndex((prev) =>
@@ -104,7 +106,21 @@ export function AudioProvider({
       }}
     >
       {children}
-      <audio ref={audioRef} preload="auto" />
+      <audio
+        ref={audioRef}
+        preload="auto"
+        playsInline
+      />
     </AudioContext.Provider>
   )
+}
+
+export const useAudio = () => {
+  const context = useContext(AudioContext)
+
+  if (!context) {
+    throw new Error('useAudio must be used inside AudioProvider')
+  }
+
+  return context
 }
