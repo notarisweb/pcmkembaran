@@ -1,16 +1,16 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { Play, Square } from 'lucide-react' // Tambahkan Square
 import { motion } from 'framer-motion'
 import { useAudio } from '../context/AudioContext'
-import { useAudioStore } from '@/store/useAudioStore'
 
 export default function BottomPlayer() {
-  const { playlist, currentTrackIndex } = useAudio()
-  const { isPlaying, isMuted, togglePlay } = useAudioStore() // toggleMute dihapus
-
-  const track = playlist[currentTrackIndex]
-  if (!track) return null
+  const {
+    isPlaying,
+    metadata,
+    toggleLivePlayback,
+    isYouTubeLive,
+  } = useAudio()
 
   return (
     <div className="fixed bottom-5 left-0 w-full flex justify-center px-4 z-50">
@@ -39,22 +39,20 @@ export default function BottomPlayer() {
           </div>
 
           <div className="text-white text-sm font-semibold truncate">
-            {track.title}
+            {metadata.title}
           </div>
 
           <div className="text-[11px] text-slate-400 truncate">
-            {track.artist}
+            {metadata.artist}
           </div>
 
           {/* status indicator */}
           <div className="mt-1 flex items-center gap-2">
             <span
-              className={`h-2 w-2 rounded-full ${
-                isPlaying && !isMuted ? 'bg-red-500 animate-pulse' : 'bg-slate-500'
-              }`}
+              className={`h-2 w-2 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-slate-500'}`}
             />
             <span className="text-[10px] uppercase tracking-widest text-slate-400">
-              {isPlaying && !isMuted ? 'On Air' : 'Paused'}
+              {isPlaying ? (isYouTubeLive ? 'LIVE' : 'On Air') : 'Paused'}
             </span>
           </div>
         </div>
@@ -62,21 +60,26 @@ export default function BottomPlayer() {
         {/* ACTION BUTTON */}
         <motion.button
           whileTap={{ scale: 0.92 }}
-          onClick={togglePlay}   // satu nyawa dengan MainPlayer
+          onClick={toggleLivePlayback}
           className={`
             relative h-12 w-12 rounded-full
             flex items-center justify-center
             transition-all duration-300
             shadow-[0_0_25px_rgba(34,211,238,0.25)]
-            ${isPlaying && !isMuted
+            ${isPlaying
               ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_25px_rgba(239,68,68,0.4)]'
               : 'bg-slate-700 hover:bg-slate-600'}
           `}
         >
-          <Play className="text-white" size={18} />
+          {/* Ikon berubah menjadi Square saat isPlaying agar sinkron dengan MainPlayer */}
+          {isPlaying ? (
+            <Square className="text-white" size={18} fill="white" />
+          ) : (
+            <Play className="text-white" size={18} fill="white" />
+          )}
 
           {/* glow ring when ON AIR */}
-          {isPlaying && !isMuted && (
+          {isPlaying && (
             <span className="absolute inset-0 rounded-full animate-ping bg-red-400/30" />
           )}
         </motion.button>

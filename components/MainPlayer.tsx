@@ -1,24 +1,27 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { Play, Square } from 'lucide-react' // Tambahkan Square untuk ikon stop
 import { motion } from 'framer-motion'
 import { useAudio } from '../context/AudioContext'
-import { useAudioStore } from '@/store/useAudioStore'
 
 export default function MainPlayer() {
-  const { playlist, currentTrackIndex } = useAudio()
-  const { togglePlay, toggleMute, isPlaying, isMuted } = useAudioStore()
+  const {
+    isPlaying,
+    metadata,
+    toggleLivePlayback,
+    isYouTubeLive,
+  } = useAudio()
 
-  const track = playlist[currentTrackIndex]
-  if (!track) return null
-
-  const handleClick = async () => {
-    await togglePlay()
+  const handleClick = () => {
+    toggleLivePlayback()
   }
+
+  // Gunakan isPlaying langsung sebagai sumber kebenaran utama
+  const isOnAir = isPlaying
 
   return (
     <div className="relative max-w-5xl mx-auto p-6">
-      
+
       {/* Glow Background */}
       <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-cyan-500/20 blur-[160px] z-0" />
       <div className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-blue-500/20 blur-[160px] z-0" />
@@ -28,13 +31,17 @@ export default function MainPlayer() {
 
         {/* Logo */}
         <div className="relative flex-shrink-0">
-          {isPlaying && !isMuted && (
+          {isOnAir && (
             <div className="absolute inset-0 rounded-full bg-cyan-400/50 blur-3xl animate-pulse" />
           )}
 
           <motion.div
-            animate={isPlaying && !isMuted ? { rotate: 360 } : { rotate: 0 }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            animate={isOnAir ? { rotate: 360 } : { rotate: 0 }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
             className="h-44 w-44 rounded-full border border-cyan-400/50 p-1 shadow-[0_0_50px_rgba(6,255,255,0.7)] flex items-center justify-center bg-black"
           >
             <img
@@ -48,20 +55,25 @@ export default function MainPlayer() {
         {/* Track Info */}
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-3xl md:text-5xl font-bold text-white">
-            Radio Berkemajuan
+            PCM KEMBARAN
           </h1>
 
-          <p className="mt-2 text-slate-400 text-lg truncate">{track.title}</p>
-          <p className="text-sm text-slate-500 truncate">{track.artist}</p>
+          <p className="mt-2 text-slate-400 text-lg truncate">
+            {metadata.title}
+          </p>
+
+          <p className="text-sm text-slate-500 truncate">
+            {metadata.artist}
+          </p>
 
           {/* ON AIR Indicator */}
-          {isPlaying && !isMuted && (
+          {isOnAir && (
             <motion.div
               animate={{ opacity: [1, 0.2, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
               className="mt-4 inline-block px-4 py-1 text-xs font-bold uppercase tracking-widest text-red-500 bg-black/50 rounded-lg"
             >
-              ON AIR
+              {isYouTubeLive ? 'LIVE YOUTUBE' : 'ON AIR'}
             </motion.div>
           )}
 
@@ -70,7 +82,7 @@ export default function MainPlayer() {
           </div>
         </div>
 
-        {/* Play Button */}
+        {/* Play/Stop Button */}
         <div className="flex-shrink-0 mt-4 md:mt-0">
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -78,10 +90,14 @@ export default function MainPlayer() {
             className={`h-16 w-16 rounded-full flex items-center justify-center
               shadow-[0_0_30px_rgba(6,182,212,0.6)]
               transition
-              ${isPlaying && !isMuted ? 'bg-red-500' : 'bg-cyan-500'}
+              ${isOnAir ? 'bg-red-500' : 'bg-cyan-500'}
             `}
           >
-            <Play size={28} className="text-white" />
+            {isOnAir ? (
+              <Square size={28} className="text-white" fill="white" />
+            ) : (
+              <Play size={28} className="text-white" fill="white" />
+            )}
           </motion.button>
         </div>
 
