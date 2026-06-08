@@ -62,7 +62,7 @@ export default function MainPlayer() {
 
         {/* Metadata */}
         <div className="flex-1 w-full text-center md:text-left">
-          <h1 className="text-2xl md:text-5xl font-bold text-white leading-tight">PCM KEMBARAN</h1>
+          <h1 className="text-2xl md:text-5xl font-bold text-white leading-tight">LIVE 24 JAM</h1>
           <p className="mt-2 text-slate-400 text-sm md:text-lg truncate">{metadata.title}</p>
           <p className="text-xs md:text-sm text-slate-500 truncate">{metadata.artist}</p>
           
