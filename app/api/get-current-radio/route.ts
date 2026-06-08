@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { client } from "@/lib/sanity.client"; // Dipertahankan sesuai path impor client Sanity Anda
+import { client } from "@/lib/sanity.client"; // Dipertahaman sesuai path impor client Sanity Anda
 
 export const dynamic = "force-dynamic"; // Memaksa API selalu fresh tanpa membeku di cache Vercel
 
@@ -117,7 +117,7 @@ export async function GET() {
     const currentSecond = now.getSeconds();
 
     // =================================================================
-    // 0. PRIORITAS UTAMA BARU: DETEKSI JADWAL 24 JAM hybrid DARI SANITY
+    // 0. PRIORITAS UTAMA: DETEKSI JADWAL 24 JAM HYBRID DARI SANITY CMS
     // =================================================================
     try {
       const sanityQuery = `
@@ -143,9 +143,9 @@ export async function GET() {
       const config = await client.fetch(sanityQuery, {}, { cache: 'no-store' });
 
       if (config && config.schedules && Array.isArray(config.schedules)) {
-        // Ambil waktu sekarang di zona lokal Asia/Jakarta (WIB)
+        // Ambil waktu sekarang di zona lokal Asia/Jakarta (WIB) secara presisi
         const localTimeStr = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
-        const [currentHours, currentMinutes] = localTimeStr.split('.').map(Number);
+        const [currentHours, currentMinutes, currentSecs] = localTimeStr.split('.').map(Number);
         const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
         let activeSchedule = null;
@@ -162,34 +162,61 @@ export async function GET() {
         // JIKA MENEMUKAN JADWAL YANG COCOK DI JAM SEKARANG
         if (activeSchedule) {
           const isYoutube = activeSchedule.broadcastMode === 'youtube_live';
-          const currentTrack = !isYoutube && activeSchedule.playlist?.length > 0 ? activeSchedule.playlist[0] : null;
           const stationName = config.radioName || "Radio Suara Berkemajuan";
 
-          return NextResponse.json({
-            active: true,
-            type: activeSchedule.broadcastMode, // 'youtube_live' atau 'playlist_mp3'
-            youtube_video_id: isYoutube ? (activeSchedule.youtubeVideoId?.trim() || null) : null,
-            thumbnail: isYoutube ? `https://img.youtube.com/vi/${activeSchedule.youtubeVideoId?.trim()}/hqdefault.jpg` : "/bg-player.png",
+          // --- MANAJEMEN MODE TRANS-TRANSMISI: YOUTUBE LIVE ---
+          if (isYoutube) {
+            const videoId = activeSchedule.youtubeVideoId?.trim() || null;
+            return NextResponse.json({
+              active: true,
+              type: "youtube_live",
+              youtube_video_id: videoId,
+              thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "/bg-player.png",
+              title: activeSchedule.eventName || "Live Streaming YouTube",
+              artist: activeSchedule.speaker || "PCM Kembaran",
+              program_title: stationName,
+              audio_url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : null,
+              elapsed_seconds: 0
+            });
+          }
+
+          // --- MANAJEMEN MODE TRANS-TRANSMISI: PLAYLIST MP3 CLOUD ---
+          if (activeSchedule.playlist && activeSchedule.playlist.length > 0) {
+            const startMinutes = timeToMinutes(activeSchedule.startTime);
             
-            // Pemetaan nama data dinamis agar sesuai desain komponen player
-            title: isYoutube 
-              ? (activeSchedule.eventName || "Live Streaming YouTube") 
-              : (currentTrack?.trackTitle || activeSchedule.eventName),
-            artist: isYoutube 
-              ? (activeSchedule.speaker || "PCM Kembaran") 
-              : (currentTrack?.speaker || activeSchedule.speaker || "PCM Kembaran"),
-            program_title: stationName,
+            // Hitung akumulasi berapa detik blok jadwal ini sudah berjalan sejak waktu mulainya
+            const secondsSinceScheduleStarted = ((currentTotalMinutes - startMinutes) * 60) + currentSecs;
+
+            // Kita asumsikan alokasi durasi putar per track MP3 adalah 1 Jam (3600 detik)
+            // agar bisa berotasi melingkar (looping) mengisi kekosongan timeline jika slot melebihi durasi file asli.
+            const ASSUMED_TRACK_DURATION = 3600; 
+            const totalPlaylistTracks = activeSchedule.playlist.length;
             
-            // Audio streaming direct dari CDN Sanity CMS jika mode playlist aktif
-            audio_url: isYoutube ? `https://www.youtube.com/watch?v=${activeSchedule.youtubeVideoId?.trim()}` : (currentTrack?.audioFileUrl || null),
-            elapsed_seconds: 0,
-            schedules: config.schedules // Payload cadangan baris jadwal
-          });
+            // Hitung indeks array file mana yang seharusnya aktif pada detik ini
+            const totalTrackIndexTimeline = Math.floor(secondsSinceScheduleStarted / ASSUMED_TRACK_DURATION);
+            const currentTrackIndex = totalTrackIndexTimeline % totalPlaylistTracks;
+            
+            const selectedTrack = activeSchedule.playlist[currentTrackIndex];
+            // Hitung detik berjalan di dalam file audio yang sedang terpilh tersebut (Catch-up sync)
+            const trackElapsedSeconds = secondsSinceScheduleStarted % ASSUMED_TRACK_DURATION;
+
+            return NextResponse.json({
+              active: true,
+              type: "playlist_mp3",
+              youtube_video_id: null,
+              thumbnail: "/bg-player.png",
+              title: selectedTrack?.trackTitle || activeSchedule.eventName,
+              artist: selectedTrack?.speaker || activeSchedule.speaker || "PCM Kembaran",
+              program_title: stationName,
+              audio_url: selectedTrack?.audioFileUrl || null,
+              elapsed_seconds: trackElapsedSeconds, // Mengirimkan posisi detik sinkronisasi ke frontend
+            });
+          }
         }
       }
     } catch (sanityError) {
       console.error("Gagal memproses otomatisasi jadwal Sanity CMS:", sanityError);
-      // Jika Sanity down, program otomatis meluncur ke bawah mengeksekusi data fallback Prisma/Filler
+      // Jika database Sanity down, program otomatis meluncur ke bawah mengeksekusi data engine Prisma/Filler
     }
 
     // =================================================================
