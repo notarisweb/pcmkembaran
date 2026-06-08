@@ -237,17 +237,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     async (data: any, forceReload = false) => {
       if (!audioRef.current || !data?.active || !data.audio_url) return false;
 
-      if (data.type === "youtube_live" || isYouTubeLive) {
-        resetMp3PlaybackCompletely();
-        setIsYouTubeLive(true);
-        setMetadata({
-          title: data.title || "YouTube Live Streaming",
-          artist: "YouTube Live Stream",
-          art: youtubeThumbnail,
-        });
-        setListeners(1);
-        return false;
-      }
+     if (data.type === "youtube_live" || isYouTubeLive) {
+  resetMp3PlaybackCompletely();
+  setIsYouTubeLive(true);
+  setMetadata({
+    title: data.title || "Radio Suara Berkemajuan",
+    artist: data.artist || "PCM Kembaran", // <--- Diubah agar fleksibel mengikuti API backend
+    art: youtubeThumbnail,
+  });
+  setListeners(1);
+  return false;
+}
 
       const audio = audioRef.current;
       const audioCtx = audioContextRef.current;
@@ -334,26 +334,18 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     try {
       const data = await fetchCurrentRadio();
 
-      if (data?.active && data.type === "youtube_live") {
-        resetMp3PlaybackCompletely();
-
-        setYoutubeVideoId(data.youtube_video_id || null);
-
-        setIsYouTubeLive(true);
-
-        setMetadata({
-          title: data.title || "YouTube Live Streaming",
-          artist: "YouTube Live Stream",
-          art:
-            data.thumbnail ||
-            (data.youtube_video_id
-              ? `https://img.youtube.com/vi/${data.youtube_video_id}/hqdefault.jpg`
-              : "/bg-player.png"),
-        });
-
-        setListeners(1);
-        return;
-      }
+     if (data?.active && data.type === "youtube_live") {
+  resetMp3PlaybackCompletely();
+  setYoutubeVideoId(data.youtube_video_id || null);
+  setIsYouTubeLive(true);
+  setMetadata({
+    title: data.title || "Radio Suara Berkemajuan",
+    artist: data.artist || "PCM Kembaran", // <--- Mengikuti string penyamaran dari API backend
+    art: data.thumbnail || (data.youtube_video_id ? `https://img.youtube.com/vi/${data.youtube_video_id}/hqdefault.jpg` : "/bg-player.png"),
+  });
+  setListeners(1);
+  return;
+}
         
       setIsYouTubeLive(false);
 
@@ -438,27 +430,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       const data = await fetchCurrentRadio();
 
       if (data?.type === "youtube_live") {
-        resetMp3PlaybackCompletely();
-
-        setYoutubeVideoId(
-          data.youtube_video_id || null
-        );
-
-        setIsYouTubeLive(true);
-
-        setMetadata({
-          title: data.title || "YouTube Live Streaming",
-          artist: "YouTube Live Stream",
-          art:
-            data.thumbnail ||
-            (data.youtube_video_id
-              ? `https://img.youtube.com/vi/${data.youtube_video_id}/hqdefault.jpg`
-              : "/bg-player.png"),
-        });
-
-        setListeners(1);
-        return;
-      }
+  resetMp3PlaybackCompletely();
+  setYoutubeVideoId(data.youtube_video_id || null);
+  setIsYouTubeLive(true);
+  setMetadata({
+    title: data.title || "Radio Suara Berkemajuan",
+    artist: data.artist || "PCM Kembaran", // <--- Mengambil substitusi dari API backend
+    art: data.thumbnail || (data.youtube_video_id ? `https://img.youtube.com/vi/${data.youtube_video_id}/hqdefault.jpg` : "/bg-player.png"),
+  });
+  setListeners(1);
+  return;
+}
        
       if (data?.active) {
         await applyRadioDataToAudio(data, false);
