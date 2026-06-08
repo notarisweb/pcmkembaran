@@ -147,11 +147,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       // Jingle diizinkan berputar jika user sedang aktif mendengar MP3 ATAU Live YouTube
       const isUserListening = isPlayingRef.current || isYouTubePlaying;
       
-      if (
-        !audioRef.current ||
-        !isUserListening ||
-        isJinglePlayingRef.current
-      ) {
+      // PERBAIKAN MUTLAK: Buang pengecekan !audioRef.current agar jingle tidak mati saat mode YouTube aktif
+      if (!isUserListening || isJinglePlayingRef.current) {
         return;
       }
 
@@ -163,10 +160,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         jingleRef.current.crossOrigin = "anonymous";
         jingleRef.current.onerror = () => {
           console.error("Jingle gagal dimuat");
-          // Reset volume audio MP3 jika aktif
-          if (audioRef.current) audioRef.current.volume = isPlayingRef.current ? 1 : 0;
+          if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
           
-          // Reset volume YouTube ke 100% jika aktif dan terjadi error pada jingle
           const iframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
           if (iframe?.contentWindow && isYouTubePlaying) {
             iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
@@ -179,17 +174,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       const iframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
 
       // ==========================================
-      // PROSES AUDIO DUCKING (Mengecilkan Latar)
+      // PROSES AUDIO DUCKING (Menciutkan Latar ke 1%)
       // ==========================================
       
-      // 1. Jalur Radio MP3
-      if (isPlayingRef.current) {
-        mainAudio.volume = 0.01; // Turunkan volume MP3 ke 1% (0.01)
+      // 1. Jalur Radio MP3 (Hanya berjalan jika elemen audio fisik MP3 termuat)
+      if (isPlayingRef.current && mainAudio) {
+        mainAudio.volume = 0.01; 
       }
 
-      // 2. Jalur YouTube Live (Kirim PostMessage API YouTube)
+      // 2. Jalur YouTube Live (Kirim PostMessage API YouTube ke 1%)
       if (isYouTubePlaying && iframe?.contentWindow) {
-        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [1] }), '*'); // Turunkan volume YouTube ke 1%
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [1] }), '*'); 
       }
 
       jingleRef.current.currentTime = 0;
@@ -201,8 +196,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (playErr) {
           console.error("Jingle playback execution blocked:", playErr);
-          // Pemulihan darurat jika pemutaran diblokir kebijakan browser
-          if (mainAudio) mainAudio.volume = isPlayingRef.current ? 1 : 0;
+          if (mainAudio && isPlayingRef.current) mainAudio.volume = 1;
           if (isYouTubePlaying && iframe?.contentWindow) {
             iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
           }
@@ -217,7 +211,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       // ==========================================
       jingleRef.current.onended = () => {
         // 1. Kembalikan volume MP3 jika aktif
-        mainAudio.volume = isPlayingRef.current ? 1 : 0;
+        if (mainAudio && isPlayingRef.current) {
+          mainAudio.volume = 1;
+        }
 
         // 2. Kembalikan volume YouTube ke 100% jika aktif
         if (isYouTubePlaying && iframe?.contentWindow) {
@@ -228,7 +224,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       };
     } catch (err) {
       console.error("Gagal memutar jingle:", err);
-      if (audioRef.current) audioRef.current.volume = isPlayingRef.current ? 1 : 0;
+      if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
       isJinglePlayingRef.current = false;
     }
   }, [isYouTubePlaying]);
