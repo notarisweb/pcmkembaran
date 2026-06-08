@@ -117,14 +117,16 @@ export async function GET() {
     const currentSecond = now.getSeconds();
 
     // =================================================================
-    // 0. PRIORITAS UTAMA: DETEKSI JADWAL 24 JAM HYBRID DARI SANITY CMS
+    // 0. PRIORITAS UTAMA: DETEKSI JADWAL HYBRID + HARI DARI SANITY CMS
     // =================================================================
     try {
+      // Ditambahkan field "day" ke dalam penarikan query GROQ
       const sanityQuery = `
         *[_type == "radioConfig"][0] {
           radioName,
           stationTagline,
           schedules[] {
+            day,
             eventName,
             speaker,
             startTime,
@@ -143,8 +145,8 @@ export async function GET() {
       const config = await client.fetch(sanityQuery, {}, { cache: 'no-store' });
 
       if (config && config.schedules && Array.isArray(config.schedules)) {
-        // PERBAIKAN SAKTI: Ekstraksi jam, menit, dan detik lokal Asia/Jakarta (WIB) tanpa split karakter titik/titik dua
-        const formatter = new Intl.DateTimeFormat('id-ID', {
+        // Ekstraksi Jam, Menit, dan Detik lokal Asia/Jakarta (WIB) yang antipeluru di Vercel
+        const timeFormatter = new Intl.DateTimeFormat('id-ID', {
           timeZone: 'Asia/Jakarta',
           hour: '2-digit',
           minute: '2-digit',
@@ -152,25 +154,36 @@ export async function GET() {
           hour12: false
         });
 
-        const timeParts = formatter.formatToParts(now);
+        const timeParts = timeFormatter.formatToParts(now);
         const currentHours = Number(timeParts.find(p => p.type === 'hour')?.value || 0);
         const currentMinutes = Number(timeParts.find(p => p.type === 'minute')?.value || 0);
         const currentSecs = Number(timeParts.find(p => p.type === 'second')?.value || 0);
         
         const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
+        // Ekstraksi Nama Hari Bahasa Inggris (e.g., "Monday", "Tuesday", dsb) sesuai sistem value Sanity
+        const dayFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Asia/Jakarta',
+          weekday: 'long'
+        });
+        const currentDayName = dayFormatter.format(now);
+
         let activeSchedule = null;
         for (const schedule of config.schedules) {
           const start = timeToMinutes(schedule.startTime);
           const end = timeToMinutes(schedule.endTime);
 
-          if (currentTotalMinutes >= start && currentTotalMinutes < end) {
+          // Evaluasi Validasi Berlapis: Jam COCOK dan Hari COCOK (Spesifik Hari atau Setiap Hari)
+          const isTimeMatch = currentTotalMinutes >= start && currentTotalMinutes < end;
+          const isDayMatch = schedule.day === 'everyday' || schedule.day === currentDayName;
+
+          if (isTimeMatch && isDayMatch) {
             activeSchedule = schedule;
             break;
           }
         }
 
-        // JIKA MENEMUKAN JADWAL YANG COCOK DI JAM SEKARANG
+        // JIKA MENEMUKAN JADWAL YANG COCOK SECARA JAM DAN HARI SIARAN
         if (activeSchedule) {
           const isYoutube = activeSchedule.broadcastMode === 'youtube_live';
           const stationName = config.radioName || "Radio Suara Berkemajuan";
@@ -215,7 +228,7 @@ export async function GET() {
               elapsed_seconds: trackElapsedSeconds,
             });
           } else {
-            // BACKUP AMAN: Jika blok waktu aktif tapi file mp3 kosong, putar filler agar web tidak offline
+            // BACKUP AMAN: Jika blok waktu aktif tapi playlist mp3 kosong, putar filler agar web tidak offline
             const totalFillerTracks = FILLER_PLAYLIST.length;
             const totalTrackIndexTimeline = Math.floor(secondsSinceScheduleStarted / ASSUMED_TRACK_DURATION);
             const currentFillerIndex = totalTrackIndexTimeline % totalFillerTracks;
