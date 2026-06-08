@@ -143,15 +143,18 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     youtubeToggleRef.current = handler;
   }, []);
 
- const playJingle = useCallback(() => {
+const playJingle = useCallback(() => {
     try {
-      // Jingle diizinkan berputar jika user sedang aktif mendengar MP3 ATAU Live YouTube
-      const isUserListening = isPlayingRef.current || isYouTubePlayingRef.current;
-      
-      // PERBAIKAN MUTLAK: Buang pengecekan !audioRef.current agar jingle tidak mati saat mode YouTube aktif
-      if (!isUserListening || isJinglePlayingRef.current) {
+      // =========================================================================
+      // Jingle HANYA diizinkan berputar jika user mendengar Radio MP3 murni.
+      // Jika user sedang memutar YouTube Live, fungsi ini langsung STOP (Return).
+      // =========================================================================
+      if (!isPlayingRef.current || isYouTubePlayingRef.current || isJinglePlayingRef.current) {
         return;
       }
+
+      const mainAudio = audioRef.current;
+      if (!mainAudio) return;
 
       isJinglePlayingRef.current = true;
 
@@ -159,45 +162,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         jingleRef.current = new Audio(JINGLE_FILE);
         jingleRef.current.preload = "auto";
         jingleRef.current.crossOrigin = "anonymous";
-       jingleRef.current.onerror = () => {
+        jingleRef.current.onerror = () => {
           console.error("Jingle gagal dimuat");
           if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
-          
-          const iframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
-          
-          // PERBAIKAN MUTLAK: Menggunakan isYouTubePlayingRef.current agar volume YouTube sukses kembali ke 100%
-          if (iframe?.contentWindow && isYouTubePlayingRef.current) {
-            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
-          }
           isJinglePlayingRef.current = false;
         };
       }
 
-      const mainAudio = audioRef.current;
-      const iframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
-
-   // =========================================================================
-      // PROSES AUDIO DUCKING FINAL (Menggunakan Ref Bayangan & Paksa Volume 100%)
-      // =========================================================================
-      
-      // 1. Pastikan volume jingle kita paksa ke 100% (Mencegah jingle senyap)
-      if (jingleRef.current) {
-        jingleRef.current.volume = 1;
-      }
-
-      // 2. Jalur Radio MP3 (Menggunakan Ref bayangan)
-      if (isPlayingRef.current && mainAudio) {
-        mainAudio.volume = 0.01; 
-      }
-
-      // 3. PERBAIKAN MUTLAK: Jalur YouTube Live (Wajib Menggunakan Ref bayangan)
-      if (isYouTubePlayingRef.current && iframe?.contentWindow) {
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'setVolume', args: [1] }), 
-          '*'
-        ); 
-      }
-
+      // PROSES AUDIO DUCKING (Hanya untuk Radio MP3 murni)
+      mainAudio.volume = 0.01; 
       jingleRef.current.currentTime = 0;
 
       const runJinglePlay = async () => {
@@ -207,52 +180,27 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (playErr) {
           console.error("Jingle playback execution blocked:", playErr);
-          if (mainAudio && isPlayingRef.current) mainAudio.volume = 1;
-          
-          // PERBAIKAN DARURAT: Gunakan Ref bayangan di dalam catch block
-          if (isYouTubePlayingRef.current && iframe?.contentWindow) {
-            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
-          }
+          if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
           isJinglePlayingRef.current = false;
         }
       };
 
       runJinglePlay();
 
-     // =========================================================================
-      // PROSES RESTORE FINAL: Kembalikan volume menggunakan Ref agar anti-membeku
-      // =========================================================================
+      // PROSES RESTORE VOLUME MP3
       jingleRef.current.onended = () => {
         const mainAudioElement = audioRef.current;
-        const targetIframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
-
-        // 1. Kembalikan volume MP3 jika aktif
         if (isPlayingRef.current && mainAudioElement) {
           mainAudioElement.volume = 1;
         }
-
-        // 2. PERBAIKAN MUTLAK: Gunakan .current agar perintah 100% sukses ditembakkan ke YouTube
-        if (isYouTubePlayingRef.current && targetIframe?.contentWindow) {
-          targetIframe.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), 
-            '*'
-          );
-        }
-
         isJinglePlayingRef.current = false;
       };
     } catch (err) {
       console.error("Gagal memutar jingle:", err);
       if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
-      
-      // Pemulihan darurat di dalam catch jika terjadi error di tengah jalan
-      const targetIframe = document.getElementById('global-youtube-player') as HTMLIFrameElement | null;
-      if (isYouTubePlayingRef.current && targetIframe?.contentWindow) {
-        targetIframe.window.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
-      }
       isJinglePlayingRef.current = false;
     }
-  }, []); // Dependensi dikunci kosong [] karena semua pengkondisian sudah aman menggunakan .current
+  }, []);
 
   const applyRadioDataToAudio = useCallback(
     async (data: any, forceReload = false) => {
