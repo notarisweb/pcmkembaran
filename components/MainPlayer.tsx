@@ -32,12 +32,12 @@ export default function MainPlayer() {
       {isYouTubeLive && youtubeVideoId && (
         <div ref={playerContainerRef} className="fixed bottom-0 right-0 w-[1px] h-[1px] z-50 overflow-hidden opacity-0">
           <iframe
-            id="youtube-live-player"
-            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&enablejsapi=1&playsinline=1`}
-            allow="autoplay; encrypted-media"
-            className="w-full h-full"
-            title="Live Player"
-          />
+  id="global-youtube-player" // PERBAIKAN 1: Samakan ID dengan yang dicari oleh AudioContext
+  src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0&enablejsapi=1&playsinline=1`} // PERBAIKAN 2: Set mute=0 agar suara YouTube langsung keluar secara normal
+  allow="autoplay; encrypted-media"
+  className="w-full h-full"
+  title="Live Player"
+/>
         </div>
       )}
 

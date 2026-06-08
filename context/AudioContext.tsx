@@ -477,7 +477,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   }, [isYouTubeLive, togglePlay]);
 
  // --- FUNGSI GLOBAL UNTUK MENGONTROL YOUTUBE DARI MANA SAJA ---
-  const toggleYouTubeAudio = useCallback(() => {
+ const toggleYouTubeAudio = useCallback(() => {
     // 1. Ambil status kebalikan dari yang sekarang berjalan
     const nextState = !isYouTubePlaying;
 
@@ -490,12 +490,28 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     // 4. Broadcast event untuk cadangan sinkronisasi komponen lawas
     window.dispatchEvent(new CustomEvent("yt-status-change", { detail: nextState }));
 
+    // =========================================================================
+    // TRIK SAKTI UNLOCK AUTOPLAY POLICY BROWSER
+    // Mengaktifkan izin objek audio jingle tepat saat user melakukan KLIK UTAMA.
+    // =========================================================================
+    if (!jingleRef.current) {
+      jingleRef.current = new Audio(JINGLE_FILE);
+      jingleRef.current.preload = "auto";
+      jingleRef.current.crossOrigin = "anonymous";
+    }
+    
+    // Paksa browser me-load file jingle di memori latar belakang lewat interaksi klik ini
+    if (nextState) {
+      jingleRef.current.load();
+    }
+    // =========================================================================
+
     // 5. Redam audio MP3 jika YouTube sedang mengambil alih siaran
     if (nextState && audioRef.current) {
       audioRef.current.volume = 0;
       setIsPlaying(false);
     }
-  }, [isYouTubePlaying]);
+  }, [isYouTubePlaying, JINGLE_FILE]); // Pastikan JINGLE_FILE masuk ke dependensi jika ia variabel luar
 
   // Listener global tambahan untuk menjaga sinkronisasi status YouTube dari luar context
   useEffect(() => {
