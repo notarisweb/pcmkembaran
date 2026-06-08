@@ -120,8 +120,13 @@ export async function GET() {
         const videoId = config.youtubeVideoId.trim();
         return NextResponse.json({
           active: true,
-          title: "Radio Suara Berkemajuan",
-          program_title: "PCM KEMBARAN",
+          // ============================================================
+          // MODIFIKASI METADATA UTUH (SAMARKAN TRACKING YOUTUBE)
+          // ============================================================
+          title: "Radio Suara Berkemajuan", // Judul utama tetap sesuai desain Anda
+          artist: "PCM Kembaran",            // <--- GANTI INI (Sebelumnya "YouTube Live Stream")
+          program_title: "Radio Suara Berkemajuan", 
+          // ============================================================
           audio_url: `https://www.youtube.com/watch?v=${videoId}`,
           youtube_video_id: videoId,
           thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
@@ -131,7 +136,6 @@ export async function GET() {
       }
     } catch (sanityError) {
       console.error("Gagal membaca konfigurasi Live dari Sanity:", sanityError);
-      // Jika Sanity bermasalah, biarkan kode berlanjut ke fallback MP3 di bawahnya
     }
 
     // =================================================================
