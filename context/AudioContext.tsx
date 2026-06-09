@@ -202,7 +202,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         setIsYouTubeLive(false);
         setMetadata({ 
           title: data?.title || "Siaran Sedang Offline", 
-          artist: data?.artist || "Radio Suara Al Muttaqin", 
+          artist: data?.artist || "Radio Suara Berkemajuan", 
           art: "/bg-player.png" 
         });
         setListeners(0);
@@ -223,8 +223,35 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // KONDISI B: JALUR PLAYLIST MP3 (SANITY ATAU FILLER)
-      if (data.type === "playlist_mp3" || data.audio_url) {
+      // 🌟 KONDISI B: JALUR RELAY RADIO FM / LIVE STREAM LAIN
+      if (data.type === "relay_radio_fm" || data.type === "live_relay") {
+        setIsYouTubeLive(false);
+        setYoutubeVideoId(null);
+        
+        setMetadata({
+          title: data.title || "Relay Radio FM",
+          artist: data.artist || "PCM Kembaran",
+          art: data.thumbnail || "/bg-player.png",
+        });
+
+        const audio = audioRef.current;
+        if (audio && data.audio_url) {
+          if (audio.src !== data.audio_url) {
+            audio.src = data.audio_url;
+            audio.load();
+            
+            // Langsung mainkan murni tanpa modifikasi currentTime (No Catch-Up Seek)
+            if (isPlayingRef.current) {
+              audio.play().catch(err => console.warn("Autoplay block protection:", err));
+            }
+          }
+        }
+        setListeners(1);
+        return;
+      }
+      
+      // KONDISI C: JALUR PLAYLIST MP3 INTERNAL
+      if (data.type === "playlist_mp3") {
         setIsYouTubeLive(false);
         setYoutubeVideoId(null);
         
@@ -241,7 +268,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             audio.src = data.audio_url;
             audio.load();
             
-            // JALANKAN CATCH-UP SEEK: Lompatkan detik player ke detik berjalan riil di server
+            // JALANKAN CATCH-UP SEEK KHUSUS PLAYLIST MP3
             if (data.elapsed_seconds && data.elapsed_seconds > 2) {
               audio.currentTime = data.elapsed_seconds;
             }
@@ -250,8 +277,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
               audio.play().catch(err => console.warn("Autoplay block protection:", err));
             }
           } else {
-            // JIKA URL-NYA SAMA (LAGU YANG SAMA), TERAPKAN TOLERANSI SELISIH DETEKSI DETIK (MAX SELISIH 6 DETIK)
-            // Ini untuk mencegah lagu loncat-loncat akibat delay koneksi fetch berkala
+            // JIKA URL-NYA SAMA, TERAPKAN TOLERANSI SELISIH MAX 6 DETIK
             if (data.elapsed_seconds && Math.abs(audio.currentTime - data.elapsed_seconds) > 6) {
               audio.currentTime = data.elapsed_seconds;
             }
