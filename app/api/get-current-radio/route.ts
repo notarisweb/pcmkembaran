@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { client } from "@/lib/sanity.client"; // Dipertahankan sesuai path impor client Sanity Anda
+import { client } from "@/lib/sanity.client"; // Dipertahaman sesuai path impor client Sanity Anda
 
 export const dynamic = "force-dynamic"; // Memaksa API selalu fresh tanpa membeku di cache Vercel
 
@@ -186,6 +186,7 @@ export async function GET() {
         // JIKA MENEMUKAN JADWAL YANG COCOK SECARA JAM DAN HARI SIARAN
         if (activeSchedule) {
           const isYoutube = activeSchedule.broadcastMode === 'youtube_live';
+          const isLiveRelay = activeSchedule.broadcastMode === 'live_relay';
           const stationName = config.radioName || "Radio Suara Berkemajuan";
           const startMinutes = timeToMinutes(activeSchedule.startTime);
           const secondsSinceScheduleStarted = ((currentTotalMinutes - startMinutes) * 60) + currentSecs;
@@ -203,6 +204,21 @@ export async function GET() {
               artist: activeSchedule.speaker || "PCM Kembaran",
               program_title: stationName,
               audio_url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : null,
+              elapsed_seconds: 0
+            });
+          }
+
+          // --- MANAJEMEN MODE TRANS-TRANSMISI: LIVE RELAY (ICECAST/BUTT) ---
+          if (isLiveRelay) {
+            return NextResponse.json({
+              active: true,
+              type: "live_relay",
+              youtube_video_id: null,
+              thumbnail: "/bg-player.png",
+              title: activeSchedule.eventName || "Live Streaming Radio",
+              artist: activeSchedule.speaker || "PCM Kembaran",
+              program_title: stationName,
+              audio_url: "/api/radio-stream", // Mengarah ke Reverse Proxy lokal yang aman SSL/HTTPS
               elapsed_seconds: 0
             });
           }
