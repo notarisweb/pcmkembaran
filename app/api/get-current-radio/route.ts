@@ -120,7 +120,6 @@ export async function GET() {
     // 0. PRIORITAS UTAMA: DETEKSI JADWAL HYBRID + HARI DARI SANITY CMS
     // =================================================================
     try {
-      // 🌟 PERBAIKAN: Menambahkan 'relayUrl' ke dalam penarikan query GROQ Sanity
       const sanityQuery = `
         *[_type == "radioConfig"][0] {
           radioName,
@@ -146,7 +145,6 @@ export async function GET() {
       const config = await client.fetch(sanityQuery, {}, { cache: 'no-store' });
 
       if (config && config.schedules && Array.isArray(config.schedules)) {
-        // Ekstraksi Jam, Menit, dan Detik lokal Asia/Jakarta (WIB) yang antipeluru di Vercel
         const timeFormatter = new Intl.DateTimeFormat('id-ID', {
           timeZone: 'Asia/Jakarta',
           hour: '2-digit',
@@ -162,7 +160,6 @@ export async function GET() {
         
         const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
-        // Ekstraksi Nama Hari Bahasa Inggris (e.g., "Monday", "Tuesday", dsb) sesuai sistem value Sanity
         const dayFormatter = new Intl.DateTimeFormat('en-US', {
           timeZone: 'Asia/Jakarta',
           weekday: 'long'
@@ -174,7 +171,6 @@ export async function GET() {
           const start = timeToMinutes(schedule.startTime);
           const end = timeToMinutes(schedule.endTime);
 
-          // Evaluasi Validasi Berlapis: Jam COCOK dan Hari COCOK (Spesifik Hari atau Setiap Hari)
           const isTimeMatch = currentTotalMinutes >= start && currentTotalMinutes < end;
           const isDayMatch = schedule.day === 'everyday' || schedule.day === currentDayName;
 
@@ -184,7 +180,6 @@ export async function GET() {
           }
         }
 
-        // JIKA MENEMUKAN JADWAL YANG COCOK SECARA JAM DAN HARI SIARAN
         if (activeSchedule) {
           const isYoutube = activeSchedule.broadcastMode === 'youtube_live';
           const isLiveRelay = activeSchedule.broadcastMode === 'live_relay' || activeSchedule.broadcastMode === 'relay_radio_fm' || activeSchedule.broadcastMode?.includes('relay');
@@ -211,9 +206,13 @@ export async function GET() {
 
           // --- MANAJEMEN MODE TRANS-TRANSMISI: LIVE RELAY (ICECAST/BUTT) ---
           if (isLiveRelay) {
-            // 🌟 PERBAIKAN: Mengambil URL Target stasiun lain secara dinamis dari input Sanity. 
-            // Jika kosong, baru melorot menggunakan internal proxy fallback.
-            const dynamicRelayUrl = activeSchedule.relayUrl?.trim() || "/api/radio-stream";
+            const cleanRelayUrl = activeSchedule.relayUrl?.trim() || "";
+            
+            // 🌟 PERBAIKAN UTAMA: Jika ada URL relay dari Sanity, bungkus jalurnya melewati 
+            // Reverse Proxy internal agar protokolnya aman (https) dan sample rate-nya otomatis rata (44.1kHz).
+            const secureAudioUrl = cleanRelayUrl 
+              ? `/api/radio-stream?url=${encodeURIComponent(cleanRelayUrl)}` 
+              : "/api/radio-stream";
 
             return NextResponse.json({
               active: true,
@@ -223,7 +222,7 @@ export async function GET() {
               title: activeSchedule.eventName || "Live Streaming Radio",
               artist: activeSchedule.speaker || "PCM Kembaran",
               program_title: stationName,
-              audio_url: dynamicRelayUrl,
+              audio_url: secureAudioUrl, // 👈 Terproteksi dan anti-cempreng
               elapsed_seconds: 0
             });
           }
@@ -249,7 +248,6 @@ export async function GET() {
               elapsed_seconds: trackElapsedSeconds,
             });
           } else {
-            // BACKUP AMAN: Jika blok waktu aktif tapi playlist mp3 kosong, putar filler agar web tidak offline
             const totalFillerTracks = FILLER_PLAYLIST.length;
             const totalTrackIndexTimeline = Math.floor(secondsSinceScheduleStarted / ASSUMED_TRACK_DURATION);
             const currentFillerIndex = totalTrackIndexTimeline % totalFillerTracks;
@@ -276,7 +274,7 @@ export async function GET() {
     }
 
     // =================================================================
-    // A. JINGLE TIAP 5 MENIT (DIKONDISIKAN SEBAGAI CRON BACKEND LAMA)
+    // A. JINGLE TIAP 5 MENIT
     // =================================================================
     if (currentMinute % 5 === 0 && currentMinute !== 0 && currentSecond < JINGLE_DURATION) {
       return NextResponse.json({
@@ -290,7 +288,7 @@ export async function GET() {
     }
 
     // =================================================================
-    // B. JALUR CADANGAN (PRISMA DATABASE ENGINE LAMA)
+    // B. JALUR CADANGAN (PRISMA)
     // =================================================================
     const currentTrack = await prisma.radioStream.findFirst({
       orderBy: {
@@ -321,7 +319,7 @@ export async function GET() {
     const allowedDuration = currentTrack.duration;
 
     // =================================================================
-    // D. JIKA AUDIO UTAMA MELEBIHI JATAH SLOT / SELESAI -> FILLER SEAMLESS
+    // D. JIKA AUDIO UTAMA MELEBIHI JATAH SLOT / SELESAI
     // =================================================================
     if (elapsedSeconds >= allowedDuration) {
       const gapSeconds = elapsedSeconds - allowedDuration;
@@ -340,7 +338,7 @@ export async function GET() {
     }
 
     // =================================================================
-    // E. KONDISI NORMAL (MP3 PRISMA UTAMA SEDANG BERJALAN)
+    // E. KONDISI NORMAL
     // =================================================================
     return NextResponse.json({
       active: true,
