@@ -202,15 +202,18 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         setIsYouTubeLive(false);
         setMetadata({ 
           title: data?.title || "Siaran Sedang Offline", 
-          artist: data?.artist || "Radio Suara Berkemajuan", 
+          artist: data?.artist || "Radio Suara Al Muttaqin", 
           art: "/bg-player.png" 
         });
         setListeners(0);
         return;
       }
 
+      // Normalisasi tipe data ke huruf kecil biar aman dari typo string
+      const currentType = String(data.type || "").toLowerCase();
+
       // KONDISI A: JALUR LIVE STREAMING YOUTUBE
-      if (data.type === "youtube_live") {
+      if (currentType === "youtube_live" || currentType.includes("youtube")) {
         resetMp3PlaybackCompletely();
         setYoutubeVideoId(data.youtube_video_id);
         setIsYouTubeLive(true);
@@ -223,13 +226,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // 🌟 KONDISI B: JALUR RELAY RADIO FM / LIVE STREAM LAIN
-      if (data.type === "relay_radio_fm" || data.type === "live_relay") {
+      // 🌟 KONDISI B: JALUR RELAY RADIO FM / LIVE STREAM LAIN (MURNI LIVE REALTIME)
+      if (currentType === "live_relay" || currentType.includes("relay")) {
         setIsYouTubeLive(false);
         setYoutubeVideoId(null);
         
         setMetadata({
-          title: data.title || "Relay Radio FM",
+          title: data.title || "Relay Radio FM / Live Stream",
           artist: data.artist || "PCM Kembaran",
           art: data.thumbnail || "/bg-player.png",
         });
@@ -240,7 +243,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             audio.src = data.audio_url;
             audio.load();
             
-            // Langsung mainkan murni tanpa modifikasi currentTime (No Catch-Up Seek)
+            // Langsung mainkan murni tanpa utak-atik currentTime (Anti-Macet)
             if (isPlayingRef.current) {
               audio.play().catch(err => console.warn("Autoplay block protection:", err));
             }
@@ -250,8 +253,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // KONDISI C: JALUR PLAYLIST MP3 INTERNAL
-      if (data.type === "playlist_mp3") {
+      // 🌟 KONDISI C: JALUR PEMUTAR FILE MP3 (Playlist, Main Prisma, Filler, Jingle)
+      // Diproteksi dengan toleransi selisih 6 detik agar audio mengalir mulus tanpa patah-patah
+      if (data.audio_url) {
         setIsYouTubeLive(false);
         setYoutubeVideoId(null);
         
@@ -263,12 +267,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
         const audio = audioRef.current;
         if (audio && data.audio_url) {
-          // Sinkronisasi ganti lagu/source audio baru
+          // Jika source audio benar-benar berganti file lagu baru
           if (audio.src !== data.audio_url) {
             audio.src = data.audio_url;
             audio.load();
             
-            // JALANKAN CATCH-UP SEEK KHUSUS PLAYLIST MP3
             if (data.elapsed_seconds && data.elapsed_seconds > 2) {
               audio.currentTime = data.elapsed_seconds;
             }
@@ -277,7 +280,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
               audio.play().catch(err => console.warn("Autoplay block protection:", err));
             }
           } else {
-            // JIKA URL-NYA SAMA, TERAPKAN TOLERANSI SELISIH MAX 6 DETIK
+            // 🔥 KUNCI PEMULIHAN: Kembalikan sistem toleransi selisih jam (Max 6 detik)
+            // Ini mencegah lagu macet/loncat-loncat setiap kali polling data 15 detik berjalan
             if (data.elapsed_seconds && Math.abs(audio.currentTime - data.elapsed_seconds) > 6) {
               audio.currentTime = data.elapsed_seconds;
             }
