@@ -83,12 +83,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* YOUTUBE MANAGER: PERMANEN & AMAN DARI UNMOUNT */}
           <YouTubeManager />
 
-          {/* FIX: Div pembungkus luar top-4 dihapus total agar tidak konflik.
-            Biarkan komponen tracker mengatur posisi internalnya secara independen.
+          {/* FIX: Dipanggil secara mandiri tanpa div pembungkus eksternal. 
+              Pengaturan tata letak seutuhnya diserahkan ke internal file InstallationTracker.tsx 
+              untuk mematikan potensi duplikasi render (kembar) di client.
           */}
           <InstallationTracker />
 
-          {/* LAYOUT WRAPPER: Sekarang memegang kendali penuh atas Header, Footer, & BottomPlayer */}
+          {/* LAYOUT WRAPPER: Memegang kendali penuh atas Header, Footer, & BottomPlayer */}
           <LayoutWrapper>
             <main style={{ flex:1, position:'relative', zIndex:1 }}>
               {children}

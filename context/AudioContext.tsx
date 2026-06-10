@@ -141,55 +141,65 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const playJingle = useCallback(() => {
-    try {
-      const currentTitle = (metadata.title || "").toLowerCase();
+  try {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      if (currentTitle.includes("adzan") || currentTitle.includes("panggilan")) {
-        isJinglePlayingRef.current = false;
-        return;
-      }
+    const currentTitle = (metadata.title || "").toLowerCase();
 
-      if (!isPlayingRef.current || isYouTubePlayingRef.current || isJinglePlayingRef.current) {
-        return;
-      }
-
-      const mainAudio = audioRef.current;
-      if (!mainAudio) return;
-
-      isJinglePlayingRef.current = true;
-
-      if (!jingleRef.current) {
-        jingleRef.current = new Audio(JINGLE_FILE);
-        jingleRef.current.preload = "auto";
-        jingleRef.current.crossOrigin = "anonymous";
-      }
-
-      jingleRef.current.onerror = () => {
-        if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
-        isJinglePlayingRef.current = false;
-      };
-
-      mainAudio.volume = 0.1; 
-      jingleRef.current.currentTime = 0;
-
-      jingleRef.current.play()
-        .catch(playErr => {
-          console.warn("Jingle blocked by browser policy:", playErr);
-          if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
-          isJinglePlayingRef.current = false;
-        });
-
-      jingleRef.current.onended = () => {
-        if (isPlayingRef.current && audioRef.current) {
-          audioRef.current.volume = 1;
-        }
-        isJinglePlayingRef.current = false;
-      };
-    } catch (err) {
-      if (audioRef.current && isPlayingRef.current) audioRef.current.volume = 1;
+    // 1. JANGAN putar jingle jika sedang masuk waktu Adzan
+    if (currentTitle.includes("adzan") || currentTitle.includes("panggilan")) {
       isJinglePlayingRef.current = false;
+      return;
     }
-  }, [JINGLE_FILE, metadata.title]);
+
+    // 2. PROTEKSI LONGGAR: Selama audio utama TIDAK sedang dipause manual oleh user (userStoppedRef.current === false),
+    // dan YouTube tidak sedang menyala, serta jingle tidak sedang bertumpuk, MAKA jingle boleh masuk.
+    if (userStoppedRef.current || isYouTubePlayingRef.current || isJinglePlayingRef.current) {
+      return;
+    }
+
+    // Pastikan audio utama memang sedang memegang source url siaran yang valid
+    if (!audio.src || audio.src === "" || audio.src === window.location.href) {
+      return;
+    }
+
+    isJinglePlayingRef.current = true;
+
+    if (!jingleRef.current) {
+      jingleRef.current = new Audio(JINGLE_FILE);
+      jingleRef.current.preload = "auto";
+      jingleRef.current.crossOrigin = "anonymous";
+    }
+
+    jingleRef.current.onerror = () => {
+      if (audioRef.current) audioRef.current.volume = 1;
+      isJinglePlayingRef.current = false;
+    };
+
+    // Pelankan audio musik utama, lalu masukkan suara jingle secara mulus (ducking effect)
+    audio.volume = 0.1; 
+    jingleRef.current.currentTime = 0;
+
+    jingleRef.current.play()
+      .catch(playErr => {
+        console.warn("Jingle blocked by browser autoplay rules:", playErr);
+        if (audioRef.current) audioRef.current.volume = 1;
+        isJinglePlayingRef.current = false;
+      });
+
+    jingleRef.current.onended = () => {
+      // Kembalikan volume audio utama ke normal setelah jingle selesai berkumandang
+      if (audioRef.current) {
+        audioRef.current.volume = 1;
+      }
+      isJinglePlayingRef.current = false;
+    };
+  } catch (err) {
+    if (audioRef.current) audioRef.current.volume = 1;
+    isJinglePlayingRef.current = false;
+  }
+}, [JINGLE_FILE, metadata.title]);
 
   const fetchMetadata = useCallback(async () => {
     try {
