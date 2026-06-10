@@ -12,7 +12,12 @@ import React, {
 interface AudioContextType {
   isPlaying: boolean;
   hasError: boolean;
-  metadata: { title: string; artist: string; art: string };
+  metadata: { 
+    title: string; 
+    artist: string; 
+    art: string; 
+    audio_url?: string | null; // FIX: Menambahkan deklarasi properti audio_url agar type-safe di MainPlayer
+  };
   listeners: number;
   togglePlay: () => void;
   toggleLivePlayback: () => void;
@@ -46,7 +51,8 @@ async function fetchCurrentRadioStatusFromBackend() {
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  // FIX: Menggunakan any pada ref untuk menghindari tabrakan penamaan dengan interface AudioContext lokal
+  const audioContextRef = useRef<any>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const youtubeToggleRef = useRef<(() => void) | null>(null);
@@ -67,10 +73,12 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = useState(false);
   const [listeners, setListeners] = useState(0);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
+  
   const [metadata, setMetadata] = useState({
     title: "Mencari Sinyal...",
     artist: "Radio Suara Berkemajuan",
     art: "/bg-player.png",
+    audio_url: null as string | null, // FIX: Inisialisasi awal properti audio_url
   });
 
   const [isYouTubeLive, setIsYouTubeLive] = useState(false);
@@ -192,7 +200,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         setMetadata({ 
           title: data?.title || "Siaran Sedang Offline", 
           artist: data?.artist || "Radio Suara Berkemajuan",
-          art: "/bg-player.png" 
+          art: "/bg-player.png",
+          audio_url: null // FIX: Set null saat offline
         });
         setListeners(0);
         lastSyncedUrlRef.current = ""; 
@@ -209,6 +218,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           title: data.title || "Live Streaming YouTube",
           artist: data.artist || "PCM Kembaran",
           art: data.thumbnail || "/bg-player.png",
+          audio_url: data.audio_url || null // FIX: Dukungan metadata link YT audio jika ada
         });
         setListeners(1);
         lastSyncedUrlRef.current = "";
@@ -237,7 +247,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
               .catch(err => {
                 console.warn("Autoplay ditolak browser saat sinkronisasi berkala:", err);
                 isAutoSwitchingRef.current = false;
-                // FIX: Jika gagal play otomatis karena aturan browser, sinkronkan UI menjadi pause!
                 setIsPlaying(false);
               });
           } else {
@@ -257,6 +266,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           title: data.title || "Panggilan Adzan Sholat",
           artist: data.artist || "Radio Suara Berkemajuan",
           art: "/bg-player.png",
+          audio_url: data.audio_url // FIX: Masukkan audio_url ke metadata state
         });
         handleAudioSourceSync(data.audio_url, data.elapsed_seconds);
         setListeners(1);
@@ -270,6 +280,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           title: data.title || "Relay Radio FM / Live Stream",
           artist: data.artist || "Radio Suara Berkemajuan",
           art: data.thumbnail || "/bg-player.png",
+          audio_url: data.audio_url // FIX: Masukkan audio_url ke metadata state
         });
         handleAudioSourceSync(data.audio_url, data.elapsed_seconds);
         setListeners(1);
@@ -283,6 +294,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           title: data.title || "Radio Suara Berkemajuan",
           artist: data.artist || "Dakwah Berkemajuan Mencerahkan Kehidupan",
           art: data.thumbnail || "/bg-player.png",
+          audio_url: data.audio_url // FIX: Masukkan audio_url ke metadata state
         });
         handleAudioSourceSync(data.audio_url, data.elapsed_seconds);
         setListeners(1);
@@ -333,7 +345,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     try {
       const audio = audioRef.current;
       
-      // FIX: Paksa Web Audio Context jalan kembali di dalam scope interaksi user
       if (audioContextRef.current && audioContextRef.current.state === "suspended") {
         await audioContextRef.current.resume();
       }
