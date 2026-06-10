@@ -8,13 +8,13 @@ const ADZAN_URL = "/audio/adzan.mp3";
 const ADZAN_DURATION = 300; // 5 Menit
 
 const FILLER_PLAYLIST = [
-  { title: "Murottal Jeda - Surah Al-Mulk", url: "https://sdit.my.id/radio/SurahAlMulk-Saad-Al-Ghamdi.mp3", duration: 415 },
-  { title: "Nasyid Jeda - Rikhie Asbo", url: "https://sdit.my.id/radio/Rikhie-Asbo.mp3", duration: 5760 },
-  { title: "Murottal Jeda - Surah Al-Waqiah", url: "https://sdit.my.id/radio/al-waqiah-ust-shidqy.mp3", duration: 780 },
-  { title: "Nasyid Jeda - Hanya Rindu Versi Arab", url: "https://sdit.my.id/radio/hanya-rindu-versi-arab.mp3", duration: 258 },
-  { title: "Murottal Jeda - Al Fatihah Syaikh Abdullah Al-Mathrud", url: "https://dn710102.ca.archive.org/0/items/abdullahal-mathrud/001-Al-Fatihah.mp3", duration: 27 },
-  { title: "Murottal Jeda - Al Baqarah Syaikh Abdullah Al-Mathrud", url: "https://dn710102.ca.archive.org/0/items/abdullahal-mathrud/002-Al-Baqarah.mp3", duration: 7200 },
-  { title: "Murottal Jeda - Ali Imron Syaikh Abdullah Al-Mathrud", url: "https://ia801406.us.archive.org/8/items/abdullahal-mathrud/003-Ali-Imran.mp3", duration: 4800 }
+  { title: "Murottal Jeda - Surah Al-Mulk", url: "https://sdit.my.id/radio/SurahAlMulk-Saad-Al-Ghamdi.mp3", duration: 415, speaker: "Saad Al-Ghamdi" },
+  { title: "Nasyid Jeda - Rikhie Asbo", url: "https://sdit.my.id/radio/Rikhie-Asbo.mp3", duration: 5760, speaker: "Rikhie Asbo" },
+  { title: "Murottal Jeda - Surah Al-Waqiah", url: "https://sdit.my.id/radio/al-waqiah-ust-shidqy.mp3", duration: 780, speaker: "Ust. Shidqy" },
+  { title: "Nasyid Jeda - Hanya Rindu Versi Arab", url: "https://sdit.my.id/radio/hanya-rindu-versi-arab.mp3", duration: 258, speaker: "Anonim" },
+  { title: "Murottal Jeda - Al Fatihah Syaikh Abdullah Al-Mathrud", url: "https://dn710102.ca.archive.org/0/items/abdullahal-mathrud/001-Al-Fatihah.mp3", duration: 27, speaker: "Syaikh Abdullah Al-Mathrud" },
+  { title: "Murottal Jeda - Al Baqarah Syaikh Abdullah Al-Mathrud", url: "https://dn710102.ca.archive.org/0/items/abdullahal-mathrud/002-Al-Baqarah.mp3", duration: 7200, speaker: "Syaikh Abdullah Al-Mathrud" },
+  { title: "Murottal Jeda - Ali Imron Syaikh Abdullah Al-Mathrud", url: "https://ia801406.us.archive.org/8/items/abdullahal-mathrud/003-Ali-Imran.mp3", duration: 4800, speaker: "Syaikh Abdullah Al-Mathrud" }
 ];
 
 const TOTAL_FILLER_DURATION = FILLER_PLAYLIST.reduce((acc, item) => acc + item.duration, 0);
@@ -25,13 +25,20 @@ const timeToMinutes = (timeStr: string): number => {
   return hours * 60 + minutes;
 };
 
-function getVirtualTrackFromPlaylist(playlist: Array<{title?: string, trackTitle?: string, duration?: number, url?: string, audioFileUrl?: string}>, secondsElapsedSinceStart: number) {
-  // Jika durasi tidak didefinisikan di playlist Sanity, asumsikan default 5 menit (300 detik) agar tidak crash
-  const getDuration = (track: any) => track.duration || 300; 
+// FIX UTAMA: Menghitung Virtual Timeline secara presisi berbasis akumulasi durasi riil antarlagu
+function getVirtualTrackFromPlaylist(
+  playlist: Array<{title?: string, trackTitle?: string, duration?: number, url?: string, audioFileUrl?: string, speaker?: string}>, 
+  secondsElapsedSinceStart: number
+) {
+  // Jika durasi tidak didefinisikan di playlist Sanity, asumsikan default 4 menit (240 detik) agar tidak crash
+  const getDuration = (track: any) => Number(track.duration) || 240; 
   const totalDuration = playlist.reduce((acc, item) => acc + getDuration(item), 0);
 
-  if (totalDuration <= 0) return { title: "Radio", url: "", elapsed: 0 };
+  if (totalDuration <= 0) {
+    return { title: "Radio Suara Berkemajuan", audio_url: "", elapsed_seconds: 0, artist: "PCM Kembaran" };
+  }
 
+  // Menentukan titik detik berjalan saat ini di dalam siklus total durasi playlist loop
   const virtualTimeline = Math.floor(Math.abs(secondsElapsedSinceStart)) % totalDuration;
   let accumulatedTime = 0;
 
@@ -42,6 +49,7 @@ function getVirtualTrackFromPlaylist(playlist: Array<{title?: string, trackTitle
         title: track.trackTitle || track.title || "Kajian Pilihan",
         audio_url: track.audioFileUrl || track.url || "",
         elapsed_seconds: virtualTimeline - accumulatedTime,
+        artist: track.speaker || "PCM Kembaran", // FIX: Mengirimkan data nama speaker/artist asli lagu ke frontend
       };
     }
     accumulatedTime += d;
@@ -51,6 +59,7 @@ function getVirtualTrackFromPlaylist(playlist: Array<{title?: string, trackTitle
     title: playlist[0].trackTitle || playlist[0].title || "Kajian Pilihan",
     audio_url: playlist[0].audioFileUrl || playlist[0].url || "",
     elapsed_seconds: 0,
+    artist: playlist[0].speaker || "PCM Kembaran",
   };
 }
 
@@ -126,7 +135,6 @@ export async function GET() {
           artist: "Radio Suara Al Muttaqin",
           program_title: "Adzan Otomatis Wilayah Purwokerto",
           audio_url: ADZAN_URL,
-          // FIX: Jangan buat frontend tersentak lompat waktu jika file lokal adzan durasinya pendek
           elapsed_seconds: elapsedAdzanSeconds > 10 ? 0 : elapsedAdzanSeconds, 
         });
       }
@@ -152,7 +160,7 @@ export async function GET() {
             playlist[] {
               trackTitle,
               speaker,
-              duration, // Pastikan menambahkan field durasi (detik) di skema Sanity Anda!
+              duration, 
               "audioFileUrl": audioFile.asset->url
             }
           }
@@ -218,11 +226,10 @@ export async function GET() {
               artist: activeSchedule.speaker || "PCM Kembaran",
               program_title: stationName,
               audio_url: secureAudioUrl,
-              elapsed_seconds: 0 // Live stream murni wajib selalu 0!
+              elapsed_seconds: 0 
             });
           }
 
-          // FIX UTAMA: Menggunakan fungsi kalkulator virtual track dinamis berbasis durasi riil
           if (activeSchedule.playlist && activeSchedule.playlist.length > 0) {
             const virtualTrack = getVirtualTrackFromPlaylist(activeSchedule.playlist, secondsSinceScheduleStarted);
             return NextResponse.json({
@@ -231,13 +238,12 @@ export async function GET() {
               youtube_video_id: null,
               thumbnail: "/bg-player.png",
               title: virtualTrack.title,
-              artist: activeSchedule.speaker || "PCM Kembaran",
+              artist: virtualTrack.artist, // FIX: Menggunakan data nama pembicara riil per lagu dari track objek
               program_title: stationName,
               audio_url: virtualTrack.audio_url,
               elapsed_seconds: virtualTrack.elapsed_seconds,
             });
           } else {
-            // Jika playlist kosong, lari ke filler track dengan aman
             const virtualFiller = getVirtualTrackFromPlaylist(FILLER_PLAYLIST, secondsSinceScheduleStarted);
             return NextResponse.json({
               active: true,
@@ -245,7 +251,7 @@ export async function GET() {
               youtube_video_id: null,
               thumbnail: "/bg-player.png",
               title: virtualFiller.title,
-              artist: activeSchedule.speaker || "PCM Kembaran",
+              artist: virtualFiller.artist, // FIX: Sesuai penyanyi/murottal filler playlist asli
               program_title: activeSchedule.eventName || stationName,
               audio_url: virtualFiller.audio_url,
               elapsed_seconds: virtualFiller.elapsed_seconds,
@@ -268,6 +274,7 @@ export async function GET() {
       return NextResponse.json({
         active: true,
         title: currentFiller.title,
+        artist: currentFiller.artist,
         program_title: "Audio Cadangan",
         audio_url: currentFiller.audio_url,
         elapsed_seconds: currentFiller.elapsed_seconds,
@@ -286,6 +293,7 @@ export async function GET() {
       return NextResponse.json({
         active: true,
         title: currentFiller.title,
+        artist: currentFiller.artist,
         program_title: "Audio Cadangan (Jeda)",
         audio_url: currentFiller.audio_url,
         elapsed_seconds: currentFiller.elapsed_seconds,
@@ -296,9 +304,9 @@ export async function GET() {
     return NextResponse.json({
       active: true,
       title: currentTrack.title,
+      artist: "Kajian Pilihan",
       program_title: currentTrack.title,
       audio_url: currentTrack.audio_url,
-      // FIX: Jaga agar tidak crash melewati durasi dari database
       elapsed_seconds: elapsedSeconds > currentTrack.duration ? 0 : elapsedSeconds,
       type: "main",
     });
@@ -309,6 +317,7 @@ export async function GET() {
     return NextResponse.json({
       active: true,
       title: emergencyFiller.title,
+      artist: emergencyFiller.artist,
       program_title: "Audio Cadangan (Emergency)",
       audio_url: emergencyFiller.audio_url,
       elapsed_seconds: emergencyFiller.elapsed_seconds,

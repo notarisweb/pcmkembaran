@@ -83,10 +83,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* YOUTUBE MANAGER: PERMANEN & AMAN DARI UNMOUNT */}
           <YouTubeManager />
 
-          {/* FIX: Posisi digeser ke kiri atas (left-4) agar tidak menutupi atau tertutup icon player/live badge */}
-          <div className="fixed top-4 left-4 z-50">
-            <InstallationTracker />
-          </div>
+          {/* FIX: Div pembungkus luar top-4 dihapus total agar tidak konflik.
+            Biarkan komponen tracker mengatur posisi internalnya secara independen.
+          */}
+          <InstallationTracker />
 
           {/* LAYOUT WRAPPER: Sekarang memegang kendali penuh atas Header, Footer, & BottomPlayer */}
           <LayoutWrapper>
