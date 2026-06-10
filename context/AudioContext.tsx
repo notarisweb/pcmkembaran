@@ -203,7 +203,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMetadata = useCallback(async () => {
     try {
-      const data = await fetchCurrentRadioStatusFromBackend(); 
+      // 🌟 FIX UTAMA: Alihkan tembakan API dari 'get-current-radio' ke 'radio-stream' 
+      // agar Next.js mengambil standarisasi sisa detik berbasis Epoch Unix Timestamp yang sama dengan Laravel!
+      const res = await fetch("/api/radio-stream", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json(); 
       
       if (!data || !data.active) {
         setIsYouTubeLive(false);
@@ -238,7 +242,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // FIX LOGIKA SINKRONISASI: Menyelaraskan buffer ke linimasa server asli tanpa interupsi reload konstan
       const handleAudioSourceSync = (audioUrl: string, elapsedSeconds?: number) => {
         const audio = audioRef.current;
         if (!audio || !audioUrl) return;
@@ -259,7 +262,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
                 isAutoSwitchingRef.current = false; 
               })
               .catch(err => {
-                console.warn("Autoplay ditolak browser saat sinkronisasi berkala:", err);
+                console.warn("Autoplay ditolak browser saat sinkronisasi:", err);
                 isAutoSwitchingRef.current = false;
                 setIsPlaying(false);
               });
@@ -267,9 +270,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             isAutoSwitchingRef.current = false;
           }
         } else {
-          // RADIO MODE CATCH-UP: Jika user aktif mendengar namun timeline tertinggal > 5 detik akibat buffer stall, paksa melompat maju
-          if (isPlayingRef.current && elapsedSeconds && Math.abs(audio.currentTime - elapsedSeconds) > 5) {
-            console.log("Menyelaraskan posisi audio ke detik live radio server:", elapsedSeconds);
+          // CATCH-UP SINKRON: Mengunci toleransi pergeseran agar tidak loop reset
+          if (isPlayingRef.current && elapsedSeconds && Math.abs(audio.currentTime - elapsedSeconds) > 4) {
             audio.currentTime = elapsedSeconds;
           }
         }

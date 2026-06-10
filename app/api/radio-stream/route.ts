@@ -1,35 +1,110 @@
 import { NextResponse } from 'next/server';
+import { client } from '@/lib/sanity.client';
 
-export const dynamic = 'force-dynamic'; // Wajib agar tidak di-cache oleh Next.js
+export const dynamic = 'force-dynamic';
+
+const timeToMinutes = (timeStr: string): number => {
+  if (!timeStr) return 0;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+};
 
 export async function GET() {
-  const ICECAST_URL = 'http://37.157.242.105:6029/stream';
+  const now = new Date();
+  let targetAudioUrl = '';
+  let broadcastMode = 'playlist_mp3';
+  let secondsSinceStarted = 0;
 
   try {
-    // 1. Ambil data stream dari server Icecast gratisan
-    const response = await fetch(ICECAST_URL, {
+    const sanityQuery = `*[_type == "radioConfig"][0] {
+      schedules[] {
+        day,
+        startTime,
+        endTime,
+        broadcastMode,
+        playlist[] { 
+          "audioFileUrl": audioFile.asset->url,
+          "duration": audioFile.asset->metadata.duration
+        }
+      }
+    }`;
+    
+    const config = await client.fetch(sanityQuery, {}, { cache: 'no-store' });
+
+    if (config?.schedules && Array.isArray(config.schedules)) {
+      const timeFormatter = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      });
+      const timeParts = timeFormatter.formatToParts(now);
+      const currentHours = Number(timeParts.find(p => p.type === 'hour')?.value || 0);
+      const currentMinutes = Number(timeParts.find(p => p.type === 'minute')?.value || 0);
+      const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
+      const dayFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', weekday: 'long' });
+      const currentDayName = dayFormatter.format(now);
+
+      for (const schedule of config.schedules) {
+        const start = timeToMinutes(schedule.startTime);
+        const end = timeToMinutes(schedule.endTime);
+        const isTimeMatch = currentTotalMinutes >= start && currentTotalMinutes < end;
+        const isDayMatch = schedule.day === 'everyday' || schedule.day === currentDayName;
+
+        if (isTimeMatch && isDayMatch) {
+          broadcastMode = schedule.broadcastMode;
+          
+          if (broadcastMode === 'playlist_mp3' && schedule.playlist?.length > 0) {
+            const playlist = schedule.playlist;
+            const currentGlobalTimestampSeconds = Math.floor(Date.now() / 1000);
+            
+            const totalPlaylistDuration = playlist.reduce((acc: number, item: any) => {
+              return acc + (Math.floor(Number(item.duration)) || 240);
+            }, 0);
+
+            if (totalPlaylistDuration > 0) {
+              const virtualTimeline = currentGlobalTimestampSeconds % totalPlaylistDuration;
+              let accumulatedTime = 0;
+
+              for (const track of playlist) {
+                const trackLen = Math.floor(Number(track.duration)) || 240;
+                
+                if (virtualTimeline >= accumulatedTime && virtualTimeline < accumulatedTime + trackLen) {
+                  targetAudioUrl = track.audioFileUrl || '';
+                  secondsSinceStarted = virtualTimeline - accumulatedTime;
+                  break;
+                }
+                accumulatedTime += trackLen;
+              }
+            }
+          }
+          break;
+        }
+      }
+    }
+  } catch (sanityError) {
+    console.error('Sanity Error:', sanityError);
+  }
+
+  // JALUR TOTAL SINKRON: Lempar data mentah ke Laravel via Query String
+  const HAWKHOST_CORE_URL = `https://sdit.my.id/radio/stream.php?mode=${broadcastMode}&stream_url=${encodeURIComponent(targetAudioUrl)}&current_seconds=${secondsSinceStarted}`;
+
+  try {
+    const response = await fetch(HAWKHOST_CORE_URL, {
       cache: 'no-store',
-      headers: {
-        'Accept': 'audio/mpeg',
-      },
+      headers: { 'Accept': 'audio/mpeg' },
     });
 
     if (!response.ok || !response.body) {
-      return new NextResponse('Radio Offline', { status: 503 });
+      return new NextResponse('Radio Offline (Hawkhost Unreachable)', { status: 503 });
     }
 
-    // 2. Semburkan kembali data audio sebagai ReadableStream lewat HTTPS website kamu
     return new NextResponse(response.body, {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
       },
     });
   } catch (error) {
-    console.error('Error Proxy Radio:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
