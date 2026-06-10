@@ -83,8 +83,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* YOUTUBE MANAGER: PERMANEN & AMAN DARI UNMOUNT */}
           <YouTubeManager />
 
-          {/* PWA INSTALLATION TRACKER */}
-          <div className="fixed top-4 right-4 z-50">
+          {/* FIX: Posisi digeser ke kiri atas (left-4) agar tidak menutupi atau tertutup icon player/live badge */}
+          <div className="fixed top-4 left-4 z-50">
             <InstallationTracker />
           </div>
 
