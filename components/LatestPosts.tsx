@@ -5,9 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Eye, CalendarDays, ArrowRight } from "lucide-react";
 
 /**
- * 1. FUNGSI FETCH DENGAN LOGIKA KALIBRASI WAKTU
- * Menambahkan 'coalesce' agar data yang tidak punya tanggal rilis (Jadwal Kajian)
- * tidak terbaca sebagai tahun 1970.
+ * 1. FUNGSI FETCH DENGAN LOGIKA KALIBRASI WAKTU + TAMENG PROTEKSI CRASH
  */
 async function getPaginatedPosts(page: number) {
   const limit = 5;
@@ -19,13 +17,18 @@ async function getPaginatedPosts(page: number) {
     "title": coalesce(title, tema), 
     "slug": slug.current,
     "image": coalesce(flyerImage.asset->url, mainImage.asset->url),
-    // FIX: Gunakan tanggal dibuat (_createdAt) jika tanggal publikasi kosong
     "publishedAt": coalesce(publishedAt, _createdAt),
     "category": coalesce(category, categories[0]->title, "Jadwal Kajian"),
     "views": coalesce(views, 0)
   }`;
 
-  return client.fetch(query, { start, end: end + 1 }, { cache: 'no-store' });
+  // 🌟 TAMENG UTAMA: Jika Sanity melempar limit 402, amankan agar tidak merusak server
+  try {
+    return await client.fetch(query, { start, end: end + 1 }, { cache: 'no-store' });
+  } catch (error) {
+    console.warn("⚠️ Sanity API Error / Limit terdeteksi di LatestPosts. Mengembalikan array kosong:", error);
+    return []; // Fallback aman
+  }
 }
 
 /**
@@ -43,8 +46,9 @@ export default async function LatestPosts({
   const allFetchedPosts = await getPaginatedPosts(currentPage);
   
   // Pisahkan 5 data utama dan gunakan data ke-6 sebagai indikator halaman selanjutnya
-  const posts = allFetchedPosts.slice(0, 5);
-  const hasNextPage = allFetchedPosts.length > 5;
+  // Amankan menggunakan parameter array kosong jika allFetchedPosts bernilai undefined
+  const posts = Array.isArray(allFetchedPosts) ? allFetchedPosts.slice(0, 5) : [];
+  const hasNextPage = Array.isArray(allFetchedPosts) ? allFetchedPosts.length > 5 : false;
 
   return (
     <section className="latest-posts-wrapper">
@@ -63,7 +67,7 @@ export default async function LatestPosts({
               <div className="visual-frame">
                 <Image 
                   src={post.image || "/logo-md.png"} 
-                  alt={post.title} 
+                  alt={post.title || "Image"} 
                   fill
                   sizes="240px"
                   className="object-cover transition-transform duration-700 group-hover:scale-110" 
@@ -79,7 +83,6 @@ export default async function LatestPosts({
                   <div className="meta-unit">
                     <CalendarDays size={14} className="text-blue-500" />
                     <span suppressHydrationWarning>
-                      {/* FIX DISPLAY: Tanggal sudah terkalibrasi dari query */}
                       {new Date(post.publishedAt).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
@@ -104,8 +107,8 @@ export default async function LatestPosts({
 
         {posts.length === 0 && (
            <div className="empty-state-notice">
-              <p>Belum ada informasi tambahan pada halaman ini.</p>
-              <Link href="/berita">Refresh Halaman</Link>
+              <p>Belum ada informasi tambahan pada halaman ini atau kuota server eksternal sedang penuh.</p>
+              <Link href="/" className="inline-block mt-3 text-blue-500 underline">Refresh Halaman</Link>
            </div>
         )}
       </div>
