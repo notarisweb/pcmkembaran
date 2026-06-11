@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
+
 import { client } from "@/lib/sanity.client"; 
 import { getAllPosts, getKhutbahPosts } from "@/lib/sanity.query";
-import { Suspense } from "react"; // 🌟 1. Import Suspense murni bawaan React
+import { Suspense } from "react"; 
 
 // Import komponen dasar
 import Headline from "@/components/Headline";
@@ -13,9 +14,9 @@ import KhutbahSidebar from "@/components/KhutbahSidebar";
 import InfoDakwah from "@/components/InfoDakwah";
 import BentoDashboard from "@/components/BentoDashboard"; 
 import NotificationButton from "@/components/NotificationButton"; 
-import LatestArticlesSidebar from "@/components/LatestArticlesSidebar"; // 🌟 2. Kembalikan import asli komponen asli
+import LatestArticlesSidebar from "@/components/LatestArticlesSidebar"; 
 
-// ISR: Update data tiap 60 detik
+// Catatan: revalidate digantikan perannya oleh force-dynamic untuk bypass total runtime build error saat API limit
 export const revalidate = 60; 
 
 export default async function Home({ 
@@ -40,11 +41,34 @@ export default async function Home({
     "masjidCount": count(*[_type == "masjid"])
   }`;
 
-  const [allPosts, khutbahData, bentoData] = await Promise.all([
-    getAllPosts(),
-    getKhutbahPosts(),
-    client.fetch(bentoQuery, {}, { cache: 'no-store' })
-  ]);
+  // Inisialisasi data cadangan awal (fallback) agar jika Sanity crash, website tidak ikut mati
+  let allPosts = [];
+  let khutbahData = [];
+  let bentoData = {
+    latestPost: null,
+    installCount: 0,
+    leader: null,
+    profile: null,
+    rantingCount: 0,
+    masjidCount: 0
+  };
+
+  // 🌟 TAMENG UTAMA: Amankan proses fetching data Sanity
+  try {
+    const [fetchedAllPosts, fetchedKhutbahData, fetchedBentoData] = await Promise.all([
+      getAllPosts(),
+      getKhutbahPosts(),
+      client.fetch(bentoQuery, {}, { cache: 'no-store' })
+    ]);
+
+    allPosts = fetchedAllPosts || [];
+    khutbahData = fetchedKhutbahData || [];
+    if (fetchedBentoData) bentoData = fetchedBentoData;
+
+  } catch (error) {
+    // Mencatat error di server log Netlify tanpa merusak atau mematikan web pengunjung
+    console.warn("⚠️ Sanity API Error / Limit terdeteksi di Halaman Utama. Mengaktifkan data fallback:", error);
+  }
 
   return (
     <div className="page-wrapper" style={{ margin: '0 auto', maxWidth: '1240px', padding: '0 20px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -66,14 +90,14 @@ export default async function Home({
         <BentoDashboard data={bentoData} />
       </section>
 
-      {/* 4. RECOMMENDATION & SIDEBAR ARTIKEL */}
+      {/* RECOMMENDATION & SIDEBAR ARTIKEL */}
       <section className="hide-on-mobile" style={{ marginTop: '60px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px' }}>
           <div className="recommendation-area">
-            <RecommendationSection allData={allPosts || []} />
+            <RecommendationSection allData={allPosts} />
           </div>
           
-          {/* 🌟 3. EKSEKUSI UTAMA: Bungkus Async Server Component menggunakan Suspense + Fallback Skeleton */}
+          {/* EKSEKUSI UTAMA: Bungkus Async Server Component menggunakan Suspense + Fallback Skeleton */}
           <aside className="sidebar-articles">
             <Suspense fallback={<div style={{ backgroundColor: "rgb(0, 74, 142)", borderTopLeftRadius: "20px", minHeight: "400px", width: "340px" }} />}>
               <LatestArticlesSidebar />
@@ -94,7 +118,7 @@ export default async function Home({
         </div>
 
         <div className="sidebar-dakwah" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          <KhutbahSidebar articles={khutbahData || []} />
+          <KhutbahSidebar articles={khutbahData} />
           <InfoDakwah />
         </div>
       </div>
