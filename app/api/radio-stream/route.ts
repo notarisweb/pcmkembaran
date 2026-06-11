@@ -91,14 +91,17 @@ export async function GET(request: NextRequest) {
   // JALUR 1: Jika Frontend melakukan fetchMetadata (Minta data JSON resmi)
   // =========================================================================
   if (requestType === 'metadata') {
+    // 🌟 PERBAIKAN SAKTI: Rumuskan URL biner Hawkhost langsung di sini
+    const DIRECT_HAWKHOST_AUDIO_URL = `https://sdit.my.id/radio/stream.php?mode=${broadcastMode}&stream_url=${encodeURIComponent(targetAudioUrl)}&current_seconds=${secondsSinceStarted}`;
+
     return NextResponse.json({
       active: true,
       type: broadcastMode,
       title: broadcastMode === "adzan" ? "Panggilan Adzan Sholat" : "Siaran Utama Radio",
       artist: "Radio Suara Berkemajuan",
       thumbnail: "/bg-player.png",
-      // Mengarahkan player audio untuk menembak file ini kembali tanpa parameter metadata
-      audio_url: `/api/radio-stream?mode=${broadcastMode}&url=${encodeURIComponent(targetAudioUrl)}&seek=${secondsSinceStarted}`,
+      // 🚀 BYPASS DIRECT: Tag <audio> di browser langsung menyedot biner murni tanpa membebani proxy internal Next.js
+      audio_url: DIRECT_HAWKHOST_AUDIO_URL,
       elapsed_seconds: secondsSinceStarted
     }, {
       headers: {
@@ -109,9 +112,8 @@ export async function GET(request: NextRequest) {
   }
 
   // =========================================================================
-  // JALUR 2: Jika Player Audio meminta Biner Musik murni (audio/mpeg)
+  // JALUR 2: Jika Player Audio lama (Fallback) meminta Biner Musik murni
   // =========================================================================
-  // Ambil parameter fallback/override jika stream dialirkan ulang dari audio_url
   const finalMode = searchParams.get('mode') || broadcastMode;
   const finalUrl = searchParams.get('url') || targetAudioUrl;
   const finalSeek = searchParams.get('seek') || secondsSinceStarted;
